@@ -22,5 +22,11 @@ jobs:
       - name: Render sample routing table
         run: python tools/render_routing.py examples/sample_routing.json
 
+      - name: Check knowledge-pack updates
+        run: python tools/knowledge_pack.py check --project examples/starter_project --packs examples/knowledge_packs
+
+      - name: Plan knowledge-pack updates
+        run: python tools/knowledge_pack.py plan --project examples/starter_project --packs examples/knowledge_packs
+
       - name: Compile tools
         run: python -m compileall -q tools

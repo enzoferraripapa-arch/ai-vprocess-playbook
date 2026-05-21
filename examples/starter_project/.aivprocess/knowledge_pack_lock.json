@@ -1,0 +1,15 @@
+{
+  "project_id": "fictional-starter-project",
+  "project_schema": "aivprocess-project/v1",
+  "status": "fictional_example_lock",
+  "knowledge_packs": [
+    {
+      "pack_id": "process-method",
+      "version": "0.1.0",
+      "manifest_sha256": "example-lock-hash-process-method-010",
+      "accepted_at": "2026-05-21T00:00:00Z",
+      "accepted_by": "example-reviewer",
+      "rationale": "Initial starter-project process-method baseline."
+    }
+  ]
+}

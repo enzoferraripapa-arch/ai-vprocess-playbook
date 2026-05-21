@@ -1,0 +1,23 @@
+{
+  "pack_id": "process-method",
+  "name": "Process Method Knowledge Pack",
+  "version": "0.2.0",
+  "schema_version": "knowledge-pack-manifest/v1",
+  "db_filename": "knowledge.db",
+  "db_sha256": "example-only-not-a-real-db-hash",
+  "compatible_project_schema": "aivprocess-project/v1",
+  "status": "fictional_example_manifest",
+  "summary": "Reusable process-method rules, No-X boundaries, routing concepts, and review prompts.",
+  "contents": [
+    "No-X rule references",
+    "activity routing concepts",
+    "gate and trace review concepts",
+    "handoff boundary concepts"
+  ],
+  "changelog": [
+    {
+      "version": "0.2.0",
+      "summary": "Add staged knowledge-pack update workflow and lock guidance."
+    }
+  ]
+}

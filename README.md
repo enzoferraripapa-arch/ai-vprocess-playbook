@@ -35,6 +35,7 @@ flowchart LR
 - gate and trace review example;
 - connector permission boundary example;
 - small routing matrix example;
+- common knowledge pack layout and update workflow;
 - one worked fictional scenario;
 - public-safety check for accidental private material.
 
@@ -53,26 +54,36 @@ flowchart LR
 2. [docs/00_no_x_rules_quickref.md](docs/00_no_x_rules_quickref.md)
 3. [docs/08_alm_vocabulary_mapping.md](docs/08_alm_vocabulary_mapping.md)
 4. [docs/03_project_profile_pattern.md](docs/03_project_profile_pattern.md)
-5. [docs/07_routing_matrix_example.md](docs/07_routing_matrix_example.md)
-6. [docs/05_gate_trace_review_example.md](docs/05_gate_trace_review_example.md)
-7. [docs/06_connector_permission_example.md](docs/06_connector_permission_example.md)
-8. [docs/04_work_item_sop_skeleton.md](docs/04_work_item_sop_skeleton.md)
-9. [docs/02_responsibility_boundary.md](docs/02_responsibility_boundary.md)
-10. [examples/scenarios/01_firmware_update_walkthrough.md](examples/scenarios/01_firmware_update_walkthrough.md)
+5. [docs/09_knowledge_pack_architecture.md](docs/09_knowledge_pack_architecture.md)
+6. [docs/07_routing_matrix_example.md](docs/07_routing_matrix_example.md)
+7. [docs/05_gate_trace_review_example.md](docs/05_gate_trace_review_example.md)
+8. [docs/06_connector_permission_example.md](docs/06_connector_permission_example.md)
+9. [docs/04_work_item_sop_skeleton.md](docs/04_work_item_sop_skeleton.md)
+10. [docs/02_responsibility_boundary.md](docs/02_responsibility_boundary.md)
+11. [examples/scenarios/01_firmware_update_walkthrough.md](examples/scenarios/01_firmware_update_walkthrough.md)
 
 ## Examples
 
 - [examples/sample_project_profile.json](examples/sample_project_profile.json)
 - [examples/sample_work_item_sop_skeleton.md](examples/sample_work_item_sop_skeleton.md)
 - [examples/sample_routing.json](examples/sample_routing.json)
+- [examples/starter_project/.aivprocess/knowledge_pack_lock.json](examples/starter_project/.aivprocess/knowledge_pack_lock.json)
+- [examples/knowledge_packs/](examples/knowledge_packs/)
 - [examples/scenarios/01_firmware_update_walkthrough.md](examples/scenarios/01_firmware_update_walkthrough.md)
 
-## Tiny Tool
+## Tiny Tools
 
 Render the sample routing matrix as Markdown:
 
 ```bash
 python tools/render_routing.py examples/sample_routing.json
+```
+
+Check and plan common knowledge-pack updates without changing the project lock:
+
+```bash
+python tools/knowledge_pack.py check --project examples/starter_project --packs examples/knowledge_packs
+python tools/knowledge_pack.py plan --project examples/starter_project --packs examples/knowledge_packs
 ```
 
 ## Safety Gate

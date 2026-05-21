@@ -1,0 +1,23 @@
+{
+  "pack_id": "security-privacy",
+  "name": "Security and Privacy Knowledge Pack",
+  "version": "0.1.0",
+  "schema_version": "knowledge-pack-manifest/v1",
+  "db_filename": "knowledge.db",
+  "db_sha256": "example-only-not-a-real-db-hash",
+  "compatible_project_schema": "aivprocess-project/v1",
+  "status": "fictional_example_manifest",
+  "summary": "Reusable security, privacy, and connector-boundary prompts for reviewable AI-assisted work.",
+  "contents": [
+    "read-only connector boundary concepts",
+    "privacy review prompts",
+    "security review prompts",
+    "handoff exclusion prompts"
+  ],
+  "changelog": [
+    {
+      "version": "0.1.0",
+      "summary": "Initial example manifest."
+    }
+  ]
+}

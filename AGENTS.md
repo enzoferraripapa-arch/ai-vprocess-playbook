@@ -22,14 +22,16 @@ Formal systems keep official records and approvals.
 3. `docs/00_no_x_rules_quickref.md`
 4. `docs/08_alm_vocabulary_mapping.md`
 5. `docs/03_project_profile_pattern.md`
-6. `docs/07_routing_matrix_example.md`
-7. `docs/05_gate_trace_review_example.md`
-8. `docs/06_connector_permission_example.md`
-9. `docs/04_work_item_sop_skeleton.md`
-10. `docs/02_responsibility_boundary.md`
-11. `examples/scenarios/01_firmware_update_walkthrough.md`
-12. `examples/sample_project_profile.json`
-13. `examples/sample_routing.json`
+6. `docs/09_knowledge_pack_architecture.md`
+7. `docs/07_routing_matrix_example.md`
+8. `docs/05_gate_trace_review_example.md`
+9. `docs/06_connector_permission_example.md`
+10. `docs/04_work_item_sop_skeleton.md`
+11. `docs/02_responsibility_boundary.md`
+12. `examples/scenarios/01_firmware_update_walkthrough.md`
+13. `examples/sample_project_profile.json`
+14. `examples/sample_routing.json`
+15. `examples/starter_project/.aivprocess/knowledge_pack_lock.json`
 
 ## Working Rules
 
@@ -39,6 +41,8 @@ Formal systems keep official records and approvals.
   names, credentials, customer names, or internal operating logs.
 - Keep work-item-like records, gates, traces, connector permissions, and
   routing outputs as candidates until reviewed.
+- Keep product-specific project DBs separate from shared knowledge-pack DBs.
+- Do not treat a skill, app, connector, or dashboard as the knowledge authority.
 - Prefer worked fictional examples over abstract placeholders when adding new
   material.
 - Do not present examples as compliance, approval, certification, safety case,
