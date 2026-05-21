@@ -24,6 +24,32 @@ approvals.
 6. `docs/responsibility_boundary.md`
 7. `docs/handoff_template.md`
 
+## Local Project DB
+
+Create the project-local DB after the profile, lock, and routing matrix are
+reviewed:
+
+```bash
+python tools/init_project_db.py
+```
+
+Record one accepted local review and a bounded handoff candidate:
+
+```bash
+python tools/record_local_handoff.py \
+  --reviewer example-reviewer \
+  --decision-rationale "Local reviewer accepted this record for handoff rehearsal."
+```
+
+Export the handoff candidate:
+
+```bash
+python tools/export_handoff.py
+```
+
+The generated `.aivprocess/project.db` is local project state. Exported handoff
+files are candidate review material, not formal-system imports.
+
 ## Local Checks
 
 ```bash

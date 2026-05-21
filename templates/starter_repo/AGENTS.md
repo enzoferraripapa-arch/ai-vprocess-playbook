@@ -8,9 +8,10 @@ This repository uses the AI V-process starter layout.
 2. `.aivprocess/project_profile.json`
 3. `.aivprocess/knowledge_pack_lock.json`
 4. `.aivprocess/routing_matrix.json`
-5. `docs/no_x_rules.md`
-6. `docs/responsibility_boundary.md`
-7. `docs/handoff_template.md`
+5. `.aivprocess/project.db` if it exists
+6. `docs/no_x_rules.md`
+7. `docs/responsibility_boundary.md`
+8. `docs/handoff_template.md`
 
 ## Rules
 
@@ -21,5 +22,8 @@ This repository uses the AI V-process starter layout.
 - Treat routes, decisions, traces, gates, and handoffs as candidates until a
   responsible human accepts them.
 - A local accepted state is not a formal ALM/QMS approval.
+- Use `tools/init_project_db.py`, `tools/record_local_handoff.py`, and
+  `tools/export_handoff.py` for the starter DB workflow unless the project has
+  adopted a different reviewed tool.
 - Run `python tools/check_public_safety.py` before publishing, handoff, or
   external sharing.

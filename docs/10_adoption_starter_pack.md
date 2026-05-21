@@ -26,6 +26,9 @@ The template contains:
 | `docs/no_x_rules.md` | Boundary rules adopted by the project. |
 | `docs/responsibility_boundary.md` | What the project owner must still own. |
 | `docs/handoff_template.md` | Bounded handoff package skeleton. |
+| `tools/init_project_db.py` | Creates the project-local SQLite DB from the reviewed starter files. |
+| `tools/record_local_handoff.py` | Records one accepted local review and handoff candidate. |
+| `tools/export_handoff.py` | Exports a handoff candidate to Markdown and JSON. |
 | `tools/check_public_safety.py` | Local publication safety gate. |
 
 ## First Setup
@@ -35,9 +38,16 @@ The template contains:
 3. Point `.aivprocess/knowledge_pack_lock.json` at the knowledge packs the
    project actually uses.
 4. Review `.aivprocess/routing_matrix.json`.
-5. Run the safety gate.
+5. Initialize `.aivprocess/project.db`.
+6. Run one local review and handoff rehearsal.
+7. Run the safety gate.
 
 ```bash
+python tools/init_project_db.py
+python tools/record_local_handoff.py \
+  --reviewer example-reviewer \
+  --decision-rationale "Local reviewer accepted this record for handoff rehearsal."
+python tools/export_handoff.py
 python tools/check_public_safety.py
 ```
 
@@ -58,6 +68,15 @@ Outside this repo:
 Do not paste common standards text, private customer documents, or shared
 knowledge-pack internals into the product repo unless the project is allowed to
 own and disclose that material.
+
+The starter DB tools are deliberately small:
+
+- `init_project_db.py` records the reviewed profile, lock, routing matrix, and
+  evidence pointers in the project DB.
+- `record_local_handoff.py` records an accepted local review and creates a
+  handoff candidate with explicit excluded counts.
+- `export_handoff.py` exports only the local candidate package. It does not
+  write to ALM, SOP, QMS, issue-tracking, or customer systems.
 
 ## Customer Installation Boundary
 
