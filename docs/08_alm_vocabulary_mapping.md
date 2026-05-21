@@ -7,6 +7,12 @@ concept.
 The table below avoids vendor-specific names while still showing how terms tend
 to move across tool styles.
 
+Style notes: document-centric RM style means classic requirements-management
+tools organized around modules or documents; item-centric ALM style means
+platforms organized around typed records and workflows; issue-tracker style
+means agile ticket systems; QMS document-control style means regulated
+document, form, and approval systems.
+
 | Playbook term | Typical meaning | Document-centric RM style | Item-centric ALM style | Issue-tracker style | QMS document-control style |
 | --- | --- | --- | --- | --- | --- |
 | Work item | A controlled unit of work, requirement, issue, test, risk, change, or review record. | object or requirement object | item or record | issue, ticket, or task | controlled form or record |

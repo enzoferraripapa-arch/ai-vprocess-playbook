@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run public safety gate
+        run: python tools/check_public_safety.py
+
+      - name: Render sample routing table
+        run: python tools/render_routing.py examples/sample_routing.json
+
+      - name: Compile tools
+        run: python -m compileall -q tools
