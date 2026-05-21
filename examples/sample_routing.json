@@ -1,0 +1,32 @@
+{
+  "routes": [
+    {
+      "route": "REQ-SOURCE",
+      "trigger": "external_requirement_source_present",
+      "activity": "source coverage review",
+      "output_candidate": "requirement source register",
+      "boundary": "NO-ROUTING-AS-APPROVAL"
+    },
+    {
+      "route": "DESIGN-IMPACT",
+      "trigger": "behavior_changing_update",
+      "activity": "impact analysis",
+      "output_candidate": "affected interface and design candidate set",
+      "boundary": "NO-ROUTING-AS-APPROVAL"
+    },
+    {
+      "route": "TRACE-GAP",
+      "trigger": "missing_trace_signal",
+      "activity": "trace review",
+      "output_candidate": "trace candidate report",
+      "boundary": "NO-TRACE-CANDIDATE-AS-TRACEABILITY"
+    },
+    {
+      "route": "HANDOFF",
+      "trigger": "accepted_local_decisions_exist",
+      "activity": "handoff review",
+      "output_candidate": "formal-system import package candidate",
+      "boundary": "NO-HANDOFF-AS-IMPORT"
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "profile_id": "SAMPLE-PROFILE-001",
+  "status": "fictional_example",
+  "common": {
+    "domain": "software-intensive product",
+    "lifecycle_stage": "prototype-to-product transition",
+    "change_type": "behavior-changing update",
+    "release_intent": "internal review package"
+  },
+  "organization": {
+    "formal_system": "configured by project owner",
+    "review_model": "human review before formal entry",
+    "connector_policy": "read-only or handoff by default"
+  },
+  "project": {
+    "risk_level": "medium",
+    "affected_subsystems": [
+      "application logic",
+      "data persistence",
+      "external interface"
+    ],
+    "known_gaps": [
+      "source-to-requirement trace candidates need review",
+      "gate evidence is incomplete"
+    ]
+  },
+  "evidence": {
+    "available": [
+      "requirement notes",
+      "test results",
+      "design rationale"
+    ],
+    "missing": [
+      "accepted trace review",
+      "formal baseline",
+      "release approval"
+    ]
+  }
+}

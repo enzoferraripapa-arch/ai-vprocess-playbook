@@ -1,0 +1,71 @@
+# AI V-Process Playbook
+
+Applied examples for reviewable AI-assisted engineering.
+
+This is the applied-example companion to
+[ai-vprocess-ops](https://github.com/enzoferraripapa-arch/ai-vprocess-ops). It
+shows how the abstract pattern can look when applied to V-process and ALM-style
+operations without tying the examples to a specific vendor tool.
+
+Use this repository like a map, not like a permit. The examples help structure
+project profiles, work-item-like records, review gates, trace candidates,
+connector permissions, and routing matrices. They do not approve a product,
+prove compliance, certify safety, authorize a connector, or replace competent
+engineering judgement.
+
+```mermaid
+flowchart LR
+    ops["ai-vprocess-ops<br/>abstract reference pattern"]
+    playbook["ai-vprocess-playbook<br/>applied operational examples"]
+    project["Your project<br/>facts, evidence, decisions, tools"]
+    formal["Formal ALM / SOP / QMS<br/>official records and approvals"]
+
+    ops --> playbook
+    playbook -. "adapt, review, own" .-> project
+    project --> formal
+```
+
+## What This Contains
+
+- vendor-neutral ALM operating examples;
+- project profile pattern;
+- work-item and SOP skeleton pattern;
+- gate and trace review example;
+- connector permission boundary example;
+- small routing matrix example;
+- public-safety check for accidental private material.
+
+## What This Is Not
+
+- a full ALM implementation;
+- a formal adapter for any vendor tool;
+- legal, regulatory, safety, cybersecurity, privacy, or quality advice;
+- evidence that your product is safe, compliant, approved, or ready to release;
+- permission to use unauthorized source code, documents, logs, or third-party
+  material.
+
+## Read First
+
+1. [docs/01_companion_relationship.md](docs/01_companion_relationship.md)
+2. [docs/02_responsibility_boundary.md](docs/02_responsibility_boundary.md)
+3. [docs/03_project_profile_pattern.md](docs/03_project_profile_pattern.md)
+4. [docs/05_gate_trace_review_example.md](docs/05_gate_trace_review_example.md)
+5. [docs/06_connector_permission_example.md](docs/06_connector_permission_example.md)
+
+## Examples
+
+- [examples/sample_project_profile.json](examples/sample_project_profile.json)
+- [examples/sample_work_item_sop_skeleton.md](examples/sample_work_item_sop_skeleton.md)
+- [examples/sample_routing.json](examples/sample_routing.json)
+
+## Safety Gate
+
+Before publishing or changing examples, run:
+
+```bash
+python tools/check_public_safety.py
+```
+
+The gate rejects common publication accidents such as committed databases,
+private paths, internal hostnames, obvious credentials, and private-source
+markers.
