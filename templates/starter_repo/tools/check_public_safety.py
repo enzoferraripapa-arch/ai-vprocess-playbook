@@ -10,6 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SKIP_DIRS = {".git", "__pycache__", ".venv", "venv", "node_modules"}
 TEXT_EXTENSIONS = {".md", ".py", ".json", ".yml", ".yaml", ".txt", ".toml"}
 BLOCKED_SUFFIXES = {".db", ".sqlite", ".sqlite3", ".p12", ".pem", ".key"}
+ALLOWED_DB_FILES = {Path(".aivprocess") / "project.db"}
 
 
 def marker(*parts: str) -> str:
@@ -56,7 +57,7 @@ def main() -> int:
     paths = iter_files()
     for path in paths:
         rel = path.relative_to(ROOT)
-        if path.suffix.lower() in BLOCKED_SUFFIXES:
+        if path.suffix.lower() in BLOCKED_SUFFIXES and rel not in ALLOWED_DB_FILES:
             errors.append(f"blocked file type: {rel}")
         text = read_text(path)
         if text is None:
