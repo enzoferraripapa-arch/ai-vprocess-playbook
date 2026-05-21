@@ -1,6 +1,8 @@
 # AI V-Process Playbook
 
-Applied examples for reviewable AI-assisted engineering.
+Abstract patterns are easy to misapply. This playbook shows what reviewable
+AI-assisted engineering can look like when project work must pass through ALM,
+SOP, or QMS-style review without pretending that an example is an approval.
 
 This is the applied-example companion to
 [ai-vprocess-ops](https://github.com/enzoferraripapa-arch/ai-vprocess-ops). It
@@ -15,10 +17,10 @@ engineering judgement.
 
 ```mermaid
 flowchart LR
-    ops["ai-vprocess-ops<br/>abstract reference pattern"]
-    playbook["ai-vprocess-playbook<br/>applied operational examples"]
-    project["Your project<br/>facts, evidence, decisions, tools"]
-    formal["Formal ALM / SOP / QMS<br/>official records and approvals"]
+    ops["ai-vprocess-ops<br/>No-X rules and executable pattern"]
+    playbook["ai-vprocess-playbook<br/>vendor-neutral examples and skeletons"]
+    project["Your project<br/>facts, evidence, decisions, ownership"]
+    formal["Formal ALM / SOP / QMS<br/>records, approvals, audit trail"]
 
     ops --> playbook
     playbook -. "adapt, review, own" .-> project
@@ -33,6 +35,7 @@ flowchart LR
 - gate and trace review example;
 - connector permission boundary example;
 - small routing matrix example;
+- one worked fictional scenario;
 - public-safety check for accidental private material.
 
 ## What This Is Not
@@ -47,16 +50,30 @@ flowchart LR
 ## Read First
 
 1. [docs/01_companion_relationship.md](docs/01_companion_relationship.md)
-2. [docs/02_responsibility_boundary.md](docs/02_responsibility_boundary.md)
-3. [docs/03_project_profile_pattern.md](docs/03_project_profile_pattern.md)
-4. [docs/05_gate_trace_review_example.md](docs/05_gate_trace_review_example.md)
-5. [docs/06_connector_permission_example.md](docs/06_connector_permission_example.md)
+2. [docs/00_no_x_rules_quickref.md](docs/00_no_x_rules_quickref.md)
+3. [docs/08_alm_vocabulary_mapping.md](docs/08_alm_vocabulary_mapping.md)
+4. [docs/03_project_profile_pattern.md](docs/03_project_profile_pattern.md)
+5. [docs/07_routing_matrix_example.md](docs/07_routing_matrix_example.md)
+6. [docs/05_gate_trace_review_example.md](docs/05_gate_trace_review_example.md)
+7. [docs/06_connector_permission_example.md](docs/06_connector_permission_example.md)
+8. [docs/04_work_item_sop_skeleton.md](docs/04_work_item_sop_skeleton.md)
+9. [docs/02_responsibility_boundary.md](docs/02_responsibility_boundary.md)
+10. [examples/scenarios/01_firmware_update_walkthrough.md](examples/scenarios/01_firmware_update_walkthrough.md)
 
 ## Examples
 
 - [examples/sample_project_profile.json](examples/sample_project_profile.json)
 - [examples/sample_work_item_sop_skeleton.md](examples/sample_work_item_sop_skeleton.md)
 - [examples/sample_routing.json](examples/sample_routing.json)
+- [examples/scenarios/01_firmware_update_walkthrough.md](examples/scenarios/01_firmware_update_walkthrough.md)
+
+## Tiny Tool
+
+Render the sample routing matrix as Markdown:
+
+```bash
+python tools/render_routing.py examples/sample_routing.json
+```
 
 ## Safety Gate
 
@@ -69,3 +86,5 @@ python tools/check_public_safety.py
 The gate rejects common publication accidents such as committed databases,
 private paths, internal hostnames, obvious credentials, and private-source
 markers.
+
+Last refresh: 2026-05-21. Next planned review: 2026-08.

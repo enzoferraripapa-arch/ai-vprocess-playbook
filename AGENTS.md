@@ -19,12 +19,17 @@ Formal systems keep official records and approvals.
 
 1. `README.md`
 2. `docs/01_companion_relationship.md`
-3. `docs/02_responsibility_boundary.md`
-4. `docs/03_project_profile_pattern.md`
-5. `docs/05_gate_trace_review_example.md`
-6. `docs/06_connector_permission_example.md`
-7. `examples/sample_project_profile.json`
-8. `examples/sample_routing.json`
+3. `docs/00_no_x_rules_quickref.md`
+4. `docs/08_alm_vocabulary_mapping.md`
+5. `docs/03_project_profile_pattern.md`
+6. `docs/07_routing_matrix_example.md`
+7. `docs/05_gate_trace_review_example.md`
+8. `docs/06_connector_permission_example.md`
+9. `docs/04_work_item_sop_skeleton.md`
+10. `docs/02_responsibility_boundary.md`
+11. `examples/scenarios/01_firmware_update_walkthrough.md`
+12. `examples/sample_project_profile.json`
+13. `examples/sample_routing.json`
 
 ## Working Rules
 
@@ -34,6 +39,8 @@ Formal systems keep official records and approvals.
   names, credentials, customer names, or internal operating logs.
 - Keep work-item-like records, gates, traces, connector permissions, and
   routing outputs as candidates until reviewed.
+- Prefer worked fictional examples over abstract placeholders when adding new
+  material.
 - Do not present examples as compliance, approval, certification, safety case,
   cybersecurity case, legal advice, or production readiness.
 - Run `python tools/check_public_safety.py` before commit or publication.
