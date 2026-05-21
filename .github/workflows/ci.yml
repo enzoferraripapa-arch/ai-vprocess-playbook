@@ -28,5 +28,11 @@ jobs:
       - name: Plan knowledge-pack updates
         run: python tools/knowledge_pack.py plan --project examples/starter_project --packs examples/knowledge_packs
 
+      - name: Create starter project
+        run: python tools/create_starter_project.py --target /tmp/aivprocess-starter
+
+      - name: Run starter safety gate
+        run: python /tmp/aivprocess-starter/tools/check_public_safety.py
+
       - name: Compile tools
         run: python -m compileall -q tools

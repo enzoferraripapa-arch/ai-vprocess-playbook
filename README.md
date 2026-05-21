@@ -36,6 +36,7 @@ flowchart LR
 - connector permission boundary example;
 - small routing matrix example;
 - common knowledge pack layout and update workflow;
+- adoption starter pack for new project repositories;
 - one worked fictional scenario;
 - public-safety check for accidental private material.
 
@@ -55,12 +56,13 @@ flowchart LR
 3. [docs/08_alm_vocabulary_mapping.md](docs/08_alm_vocabulary_mapping.md)
 4. [docs/03_project_profile_pattern.md](docs/03_project_profile_pattern.md)
 5. [docs/09_knowledge_pack_architecture.md](docs/09_knowledge_pack_architecture.md)
-6. [docs/07_routing_matrix_example.md](docs/07_routing_matrix_example.md)
-7. [docs/05_gate_trace_review_example.md](docs/05_gate_trace_review_example.md)
-8. [docs/06_connector_permission_example.md](docs/06_connector_permission_example.md)
-9. [docs/04_work_item_sop_skeleton.md](docs/04_work_item_sop_skeleton.md)
-10. [docs/02_responsibility_boundary.md](docs/02_responsibility_boundary.md)
-11. [examples/scenarios/01_firmware_update_walkthrough.md](examples/scenarios/01_firmware_update_walkthrough.md)
+6. [docs/10_adoption_starter_pack.md](docs/10_adoption_starter_pack.md)
+7. [docs/07_routing_matrix_example.md](docs/07_routing_matrix_example.md)
+8. [docs/05_gate_trace_review_example.md](docs/05_gate_trace_review_example.md)
+9. [docs/06_connector_permission_example.md](docs/06_connector_permission_example.md)
+10. [docs/04_work_item_sop_skeleton.md](docs/04_work_item_sop_skeleton.md)
+11. [docs/02_responsibility_boundary.md](docs/02_responsibility_boundary.md)
+12. [examples/scenarios/01_firmware_update_walkthrough.md](examples/scenarios/01_firmware_update_walkthrough.md)
 
 ## Examples
 
@@ -69,6 +71,7 @@ flowchart LR
 - [examples/sample_routing.json](examples/sample_routing.json)
 - [examples/starter_project/.aivprocess/knowledge_pack_lock.json](examples/starter_project/.aivprocess/knowledge_pack_lock.json)
 - [examples/knowledge_packs/](examples/knowledge_packs/)
+- [templates/starter_repo/](templates/starter_repo/)
 - [examples/scenarios/01_firmware_update_walkthrough.md](examples/scenarios/01_firmware_update_walkthrough.md)
 
 ## Tiny Tools
@@ -84,6 +87,12 @@ Check and plan common knowledge-pack updates without changing the project lock:
 ```bash
 python tools/knowledge_pack.py check --project examples/starter_project --packs examples/knowledge_packs
 python tools/knowledge_pack.py plan --project examples/starter_project --packs examples/knowledge_packs
+```
+
+Create a starter layout for a new product repository:
+
+```bash
+python tools/create_starter_project.py --target ../my-product-repo
 ```
 
 ## Safety Gate

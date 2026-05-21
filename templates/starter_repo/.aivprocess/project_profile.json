@@ -1,0 +1,29 @@
+{
+  "project_id": "replace-with-project-id",
+  "status": "starter_template",
+  "owner": {
+    "organization": "replace-with-organization",
+    "project_owner": "replace-with-owner-role",
+    "review_owner": "replace-with-review-owner-role"
+  },
+  "common": {
+    "domain": "replace-with-domain",
+    "lifecycle_stage": "replace-with-lifecycle-stage",
+    "change_type": "replace-with-change-type",
+    "release_intent": "replace-with-release-intent"
+  },
+  "project": {
+    "risk_level": "replace-with-risk-level",
+    "affected_subsystems": [],
+    "known_gaps": []
+  },
+  "formal_systems": {
+    "alm": "replace-with-formal-system-or-none",
+    "qms": "replace-with-formal-system-or-none",
+    "handoff_mode": "manual | dry-run | approved-connector"
+  },
+  "evidence": {
+    "available": [],
+    "missing": []
+  }
+}

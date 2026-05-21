@@ -23,15 +23,17 @@ Formal systems keep official records and approvals.
 4. `docs/08_alm_vocabulary_mapping.md`
 5. `docs/03_project_profile_pattern.md`
 6. `docs/09_knowledge_pack_architecture.md`
-7. `docs/07_routing_matrix_example.md`
-8. `docs/05_gate_trace_review_example.md`
-9. `docs/06_connector_permission_example.md`
-10. `docs/04_work_item_sop_skeleton.md`
-11. `docs/02_responsibility_boundary.md`
-12. `examples/scenarios/01_firmware_update_walkthrough.md`
-13. `examples/sample_project_profile.json`
-14. `examples/sample_routing.json`
-15. `examples/starter_project/.aivprocess/knowledge_pack_lock.json`
+7. `docs/10_adoption_starter_pack.md`
+8. `docs/07_routing_matrix_example.md`
+9. `docs/05_gate_trace_review_example.md`
+10. `docs/06_connector_permission_example.md`
+11. `docs/04_work_item_sop_skeleton.md`
+12. `docs/02_responsibility_boundary.md`
+13. `examples/scenarios/01_firmware_update_walkthrough.md`
+14. `examples/sample_project_profile.json`
+15. `examples/sample_routing.json`
+16. `examples/starter_project/.aivprocess/knowledge_pack_lock.json`
+17. `templates/starter_repo/`
 
 ## Working Rules
 
@@ -43,6 +45,8 @@ Formal systems keep official records and approvals.
   routing outputs as candidates until reviewed.
 - Keep product-specific project DBs separate from shared knowledge-pack DBs.
 - Do not treat a skill, app, connector, or dashboard as the knowledge authority.
+- When adding starter templates, keep them fictional and generic enough to copy
+  into a new repository without leaking private context.
 - Prefer worked fictional examples over abstract placeholders when adding new
   material.
 - Do not present examples as compliance, approval, certification, safety case,
