@@ -8,6 +8,7 @@ Thumbs.db
 *.sqlite
 *.sqlite3
 *.db
+!.aivprocess/project.db
 .aivprocess/update_staging/
 exports/
 inbox/
