@@ -20,9 +20,11 @@ approvals.
 2. `.aivprocess/project_profile.json`
 3. `.aivprocess/knowledge_pack_lock.json`
 4. `.aivprocess/routing_matrix.json`
-5. `docs/no_x_rules.md`
-6. `docs/responsibility_boundary.md`
-7. `docs/handoff_template.md`
+5. `.aivprocess/project.db` after it exists
+6. `docs/review_brief_YYYYMMDD.md` after it exists
+7. `docs/no_x_rules.md`
+8. `docs/responsibility_boundary.md`
+9. `docs/handoff_template.md`
 
 ## Local Project DB
 
@@ -47,13 +49,24 @@ Export the handoff candidate:
 python tools/export_handoff.py
 ```
 
+Generate the compact Review Brief:
+
+```bash
+python tools/generate_review_brief.py --record-db
+```
+
 The generated `.aivprocess/project.db` is local project state. Exported handoff
 files are candidate review material, not formal-system imports.
+The generated Review Brief is the preferred first packet for human review; it
+compresses the project DB, route coverage, handoff candidates, knowledge-pack
+lock, review attention, and No-X boundaries before reviewers open the larger
+document set.
 
 ## Local Checks
 
 ```bash
 python tools/check_public_safety.py
+python -m py_compile tools/generate_review_brief.py
 ```
 
 ## Ownership

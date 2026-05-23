@@ -37,6 +37,7 @@ flowchart LR
 - small routing matrix example;
 - common knowledge pack layout and update workflow;
 - adoption starter pack for new project repositories;
+- Review Brief generation for small human-facing review packets;
 - one worked fictional scenario;
 - public-safety check for accidental private material.
 
@@ -93,6 +94,13 @@ Create a starter layout for a new product repository:
 
 ```bash
 python tools/create_starter_project.py --target ../my-product-repo
+cd ../my-product-repo
+python tools/init_project_db.py
+python tools/record_local_handoff.py \
+  --reviewer example-reviewer \
+  --decision-rationale "Local reviewer accepted this record for handoff rehearsal."
+python tools/export_handoff.py
+python tools/generate_review_brief.py --record-db
 ```
 
 ## Safety Gate

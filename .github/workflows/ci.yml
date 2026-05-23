@@ -34,8 +34,17 @@ jobs:
       - name: Create starter project
         run: python tools/create_starter_project.py --target /tmp/aivprocess-starter
 
+      - name: Run starter local loop
+        run: |
+          python /tmp/aivprocess-starter/tools/init_project_db.py
+          python /tmp/aivprocess-starter/tools/record_local_handoff.py \
+            --reviewer example-reviewer \
+            --decision-rationale "Local reviewer accepted this record for handoff rehearsal."
+          python /tmp/aivprocess-starter/tools/export_handoff.py
+          python /tmp/aivprocess-starter/tools/generate_review_brief.py --record-db
+
       - name: Run starter safety gate
         run: python /tmp/aivprocess-starter/tools/check_public_safety.py
 
       - name: Compile tools
-        run: python -m compileall -q tools
+        run: python -m compileall -q tools templates/starter_repo/tools

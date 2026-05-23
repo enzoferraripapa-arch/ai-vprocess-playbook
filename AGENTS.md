@@ -47,6 +47,9 @@ Formal systems keep official records and approvals.
 - Do not treat a skill, app, connector, or dashboard as the knowledge authority.
 - When adding starter templates, keep them fictional and generic enough to copy
   into a new repository without leaking private context.
+- Starter project updates should keep `tools/generate_review_brief.py`,
+  README, AGENTS, and adoption docs aligned so Review Brief remains the default
+  human-facing compression layer.
 - Prefer worked fictional examples over abstract placeholders when adding new
   material.
 - Do not present examples as compliance, approval, certification, safety case,

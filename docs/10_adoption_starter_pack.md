@@ -29,6 +29,7 @@ The template contains:
 | `tools/init_project_db.py` | Creates the project-local SQLite DB from the reviewed starter files. |
 | `tools/record_local_handoff.py` | Records one accepted local review and handoff candidate. |
 | `tools/export_handoff.py` | Exports a handoff candidate to Markdown and JSON. |
+| `tools/generate_review_brief.py` | Compresses the project DB, route coverage, handoffs, and No-X boundaries into a small human review packet. |
 | `tools/check_public_safety.py` | Local publication safety gate. |
 
 ## First Setup
@@ -40,7 +41,8 @@ The template contains:
 4. Review `.aivprocess/routing_matrix.json`.
 5. Initialize `.aivprocess/project.db`.
 6. Run one local review and handoff rehearsal.
-7. Run the safety gate.
+7. Generate the Review Brief as the first human-facing packet.
+8. Run the safety gate.
 
 ```bash
 python tools/init_project_db.py
@@ -48,6 +50,7 @@ python tools/record_local_handoff.py \
   --reviewer example-reviewer \
   --decision-rationale "Local reviewer accepted this record for handoff rehearsal."
 python tools/export_handoff.py
+python tools/generate_review_brief.py --record-db
 python tools/check_public_safety.py
 ```
 
@@ -77,6 +80,9 @@ The starter DB tools are deliberately small:
   handoff candidate with explicit excluded counts.
 - `export_handoff.py` exports only the local candidate package. It does not
   write to ALM, SOP, QMS, issue-tracking, or customer systems.
+- `generate_review_brief.py` summarizes the local DB, route coverage, latest
+  handoff candidates, review attention, and No-X boundaries. It is a review
+  packet, not an approval or import record.
 
 ## Customer Installation Boundary
 
@@ -115,4 +121,5 @@ Before calling a project "set up", check:
 - routing matrix has project-specific triggers, not only template examples;
 - responsibility boundary is accepted by the project owner;
 - handoff route is defined as manual, dry-run, or approved connector;
+- Review Brief exists and is newer than the product DB/routing/handoff inputs;
 - safety gate passes.

@@ -9,9 +9,10 @@ This repository uses the AI V-process starter layout.
 3. `.aivprocess/knowledge_pack_lock.json`
 4. `.aivprocess/routing_matrix.json`
 5. `.aivprocess/project.db` if it exists
-6. `docs/no_x_rules.md`
-7. `docs/responsibility_boundary.md`
-8. `docs/handoff_template.md`
+6. `docs/review_brief_YYYYMMDD.md` if it exists
+7. `docs/no_x_rules.md`
+8. `docs/responsibility_boundary.md`
+9. `docs/handoff_template.md`
 
 ## Rules
 
@@ -25,5 +26,7 @@ This repository uses the AI V-process starter layout.
 - Use `tools/init_project_db.py`, `tools/record_local_handoff.py`, and
   `tools/export_handoff.py` for the starter DB workflow unless the project has
   adopted a different reviewed tool.
+- Use `tools/generate_review_brief.py --record-db` to create the small
+  human-facing packet after DB/handoff updates.
 - Run `python tools/check_public_safety.py` before publishing, handoff, or
   external sharing.
