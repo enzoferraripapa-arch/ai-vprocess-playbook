@@ -4,12 +4,14 @@ import argparse
 import datetime as dt
 import hashlib
 import json
+import sqlite3
 import sys
 from pathlib import Path
 from typing import Any
 
 
 LOCK_RELATIVE_PATH = Path(".aivprocess") / "knowledge_pack_lock.json"
+PROJECT_DB_RELATIVE_PATH = Path(".aivprocess") / "project.db"
 
 
 def read_json(path: Path) -> dict[str, Any]:
@@ -177,6 +179,50 @@ def accept_plan(project: Path, staged: Path, accepted_by: str, rationale: str) -
 
     lock["knowledge_packs"] = [locked[pack_id] for pack_id in sorted(locked)]
     write_json(project / LOCK_RELATIVE_PATH, lock)
+    sync_project_db_adoption(project, lock)
+
+
+def sync_project_db_adoption(project: Path, lock: dict[str, Any]) -> None:
+    db_path = project / PROJECT_DB_RELATIVE_PATH
+    if not db_path.exists():
+        return
+
+    conn = sqlite3.connect(db_path)
+    try:
+        table_exists = conn.execute(
+            """
+            SELECT 1
+            FROM sqlite_master
+            WHERE type = 'table' AND name = 'knowledge_pack_adoption'
+            """
+        ).fetchone()
+        if table_exists is None:
+            return
+
+        conn.execute("DELETE FROM knowledge_pack_adoption")
+        rows = [
+            (
+                str(item.get("pack_id", "")),
+                str(item.get("version", "")),
+                str(item.get("manifest_sha256", "")),
+                str(item.get("accepted_at", "")),
+                str(item.get("accepted_by", "")),
+                str(item.get("rationale", "")),
+                "NO-PACK-UPDATE-AS-PROJECT-APPROVAL",
+            )
+            for item in lock.get("knowledge_packs", [])
+        ]
+        conn.executemany(
+            """
+            INSERT INTO knowledge_pack_adoption(
+                pack_id, version, manifest_sha256, accepted_at, accepted_by, rationale, boundary
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            rows,
+        )
+        conn.commit()
+    finally:
+        conn.close()
 
 
 def main() -> int:
