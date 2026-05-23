@@ -57,15 +57,16 @@ Each knowledge pack needs a manifest.
   "version": "0.2.0",
   "schema_version": "knowledge-pack-manifest/v1",
   "db_filename": "knowledge.db",
-  "db_sha256": "example-only-not-a-real-db-hash",
+  "db_sha256": "real-sha256-of-knowledge-db",
   "compatible_project_schema": "aivprocess-project/v1",
-  "status": "example_manifest",
+  "status": "local_db_built",
   "summary": "Reusable process-method rules and review prompts."
 }
 ```
 
-The manifest is the stable contract. The DB file may be local, private, or
-customer-specific.
+The manifest is the stable contract. A product may lock a pack only when the
+referenced DB file exists and its SHA-256 matches `db_sha256`. Example-only
+manifests are documentation fixtures, not adoptable knowledge packs.
 
 ## Project Lock
 
@@ -79,6 +80,7 @@ Each project records the exact knowledge pack versions it used.
       "pack_id": "process-method",
       "version": "0.1.0",
       "manifest_sha256": "example-lock-hash",
+      "db_sha256": "real-sha256-of-knowledge-db",
       "accepted_at": "2026-05-21T00:00:00Z",
       "accepted_by": "example-reviewer",
       "rationale": "Initial starter project baseline."

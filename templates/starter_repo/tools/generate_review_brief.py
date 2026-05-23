@@ -171,7 +171,26 @@ def project_profile() -> dict[str, Any]:
     }
 
 
-def route_coverage() -> dict[str, int]:
+def db_handoff_routes(conn: sqlite3.Connection) -> list[str]:
+    try:
+        return [
+            str(row[0])
+            for row in conn.execute(
+                """
+                SELECT DISTINCT route_event.route
+                FROM handoff_candidate
+                JOIN review_state ON review_state.review_id = handoff_candidate.source_review_id
+                JOIN candidate_decision ON candidate_decision.decision_id = review_state.decision_id
+                JOIN route_event ON route_event.route_event_id = candidate_decision.route_event_id
+                WHERE route_event.route IS NOT NULL AND trim(route_event.route) != ''
+                """
+            ).fetchall()
+        ]
+    except sqlite3.Error:
+        return []
+
+
+def route_coverage(conn: sqlite3.Connection) -> dict[str, int]:
     routing = read_json(ROOT / ".aivprocess" / "routing_matrix.json")
     routes = sorted(
         {
@@ -181,10 +200,7 @@ def route_coverage() -> dict[str, int]:
         }
     )
     handoff_files = sorted((ROOT / "exports" / "handoff").glob("HANDOFF-*.md"))
-    covered = 0
-    for route in routes:
-        if any(path.name.startswith(f"HANDOFF-{route}") for path in handoff_files):
-            covered += 1
+    covered = len(set(routes) & set(db_handoff_routes(conn)))
     return {
         "routes": len(routes),
         "handoff_exports": len(handoff_files),
@@ -199,6 +215,7 @@ def pack_rows() -> list[dict[str, Any]]:
         {
             "pack": item.get("pack_id", ""),
             "locked": item.get("version", ""),
+            "db_sha256": str(item.get("db_sha256", ""))[:16],
             "accepted_by": item.get("accepted_by", ""),
             "accepted_at": item.get("accepted_at", ""),
         }
@@ -226,10 +243,10 @@ def attention(profile: dict[str, Any], coverage: dict[str, int], conn: sqlite3.C
     return items
 
 
-def render(db_path: Path, handoff_limit: int) -> str:
+def render(db_path: Path, handoff_limit: int, generated_at: str) -> str:
     profile = project_profile()
-    coverage = route_coverage()
     with connect_readonly(db_path) as conn:
+        coverage = route_coverage(conn)
         count_rows = db_counts(conn)
         decisions = status_counts(conn, "candidate_decision")
         reviews = status_counts(conn, "review_state")
@@ -243,7 +260,7 @@ def render(db_path: Path, handoff_limit: int) -> str:
     lines = [
         f"# {profile['project_id']} Review Brief",
         "",
-        f"Generated: `{utc_now()}`",
+        f"Generated: `{generated_at}`",
         "",
         "This Review Brief compresses the project-local DB, profile, routing matrix,",
         "knowledge-pack lock, and handoff exports into a small human review packet.",
@@ -282,7 +299,7 @@ def render(db_path: Path, handoff_limit: int) -> str:
     )
     lines.extend(table(count_rows, [("Table", "table"), ("Rows", "count")]))
     lines.extend(["", "## Knowledge Packs", ""])
-    lines.extend(table(pack_rows(), [("Pack", "pack"), ("Locked", "locked"), ("Accepted by", "accepted_by"), ("Accepted at", "accepted_at")]))
+    lines.extend(table(pack_rows(), [("Pack", "pack"), ("Locked", "locked"), ("DB hash", "db_sha256"), ("Accepted by", "accepted_by"), ("Accepted at", "accepted_at")]))
     lines.extend(["", "## Review State Summary", "", "### Decisions", ""])
     lines.extend(table(decisions, [("Status", "status"), ("Count", "count")]))
     lines.extend(["", "### Reviews", ""])
@@ -366,9 +383,10 @@ def main() -> int:
 
     generated_at = utc_now()
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(render(args.db, args.handoff_limit), encoding="utf-8")
     if args.record_db:
         record_brief(args.db, args.output, generated_at)
+    args.output.write_text(render(args.db, args.handoff_limit, generated_at), encoding="utf-8")
+    if args.record_db:
         os.utime(args.output, None)
     print(args.output)
     return 0

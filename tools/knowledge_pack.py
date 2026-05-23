@@ -60,6 +60,46 @@ def load_manifests(packs: Path) -> dict[str, dict[str, Any]]:
     return manifests
 
 
+def validate_manifest_db(manifest: dict[str, Any]) -> dict[str, Any]:
+    manifest_path = Path(str(manifest["_manifest_path"]))
+    db_filename = str(manifest.get("db_filename", "")).strip()
+    manifest_db_sha256 = str(manifest.get("db_sha256", "")).strip()
+    db_path = manifest_path.parent / db_filename if db_filename else manifest_path.parent / "(missing-db-filename)"
+    errors: list[str] = []
+    actual_db_sha256 = ""
+
+    if not db_filename:
+        errors.append("missing_db_filename")
+    elif not db_path.exists():
+        errors.append("missing_db_file")
+    elif not db_path.is_file():
+        errors.append("db_path_is_not_file")
+    else:
+        actual_db_sha256 = sha256_file(db_path)
+
+    if not manifest_db_sha256:
+        errors.append("missing_manifest_db_sha256")
+    elif actual_db_sha256 and manifest_db_sha256 != actual_db_sha256:
+        errors.append("db_sha256_mismatch")
+
+    if str(manifest.get("status", "")) != "local_db_built":
+        errors.append("manifest_status_not_local_db_built")
+
+    return {
+        "db_path": str(db_path),
+        "db_sha256": actual_db_sha256,
+        "manifest_db_sha256": manifest_db_sha256,
+        "validation_status": "valid" if not errors else "invalid",
+        "validation_errors": errors,
+    }
+
+
+def lock_hash_matches(locked_item: dict[str, Any], record: dict[str, Any]) -> bool:
+    locked_manifest = str(locked_item.get("manifest_sha256", ""))
+    locked_db = str(locked_item.get("db_sha256", ""))
+    return locked_manifest == record["manifest_sha256"] and locked_db == record["db_sha256"]
+
+
 def build_plan(project: Path, packs: Path) -> dict[str, Any]:
     lock = load_lock(project)
     manifests = load_manifests(packs)
@@ -68,6 +108,7 @@ def build_plan(project: Path, packs: Path) -> dict[str, Any]:
     updates: list[dict[str, Any]] = []
     unchanged: list[dict[str, Any]] = []
     missing: list[dict[str, Any]] = []
+    invalid: list[dict[str, Any]] = []
     available_new: list[dict[str, Any]] = []
 
     for pack_id, locked_item in sorted(locked.items()):
@@ -91,8 +132,15 @@ def build_plan(project: Path, packs: Path) -> dict[str, Any]:
             "manifest_sha256": sha256_file(Path(manifest["_manifest_path"])),
             "summary": manifest.get("summary", ""),
         }
-        if version_key(latest_version) > version_key(locked_version):
+        record.update(validate_manifest_db(manifest))
+        if record["validation_status"] != "valid":
+            record["status"] = "invalid_locked_pack"
+            invalid.append(record)
+        elif version_key(latest_version) > version_key(locked_version):
             record["status"] = "update_available"
+            updates.append(record)
+        elif not lock_hash_matches(locked_item, record):
+            record["status"] = "lock_hash_mismatch"
             updates.append(record)
         else:
             record["status"] = "unchanged"
@@ -101,7 +149,7 @@ def build_plan(project: Path, packs: Path) -> dict[str, Any]:
     for pack_id, manifest in sorted(manifests.items()):
         if pack_id not in locked:
             available_new.append(
-                {
+                record := {
                     "pack_id": pack_id,
                     "available_version": manifest["version"],
                     "manifest_path": manifest["_manifest_path"],
@@ -110,6 +158,9 @@ def build_plan(project: Path, packs: Path) -> dict[str, Any]:
                     "status": "available_not_locked",
                 }
             )
+            record.update(validate_manifest_db(manifest))
+            if record["validation_status"] != "valid":
+                record["status"] = "available_invalid"
 
     return {
         "project": str(project),
@@ -119,6 +170,7 @@ def build_plan(project: Path, packs: Path) -> dict[str, Any]:
         "updates": updates,
         "unchanged": unchanged,
         "missing": missing,
+        "invalid": invalid,
         "available_new": available_new,
         "no_x_boundary": [
             "NO-PACK-UPDATE-AS-PROJECT-APPROVAL",
@@ -136,8 +188,10 @@ def print_check(plan: dict[str, Any]) -> None:
         rows.append((item["pack_id"], item["locked_version"], item["available_version"], "unchanged"))
     for item in plan["missing"]:
         rows.append((item["pack_id"], str(item["locked_version"]), "-", "missing_manifest"))
+    for item in plan["invalid"]:
+        rows.append((item["pack_id"], item["locked_version"], item["available_version"], "invalid_locked_pack"))
     for item in plan["available_new"]:
-        rows.append((item["pack_id"], "-", item["available_version"], "available_not_locked"))
+        rows.append((item["pack_id"], "-", item["available_version"], item["status"]))
 
     print("| Pack | Locked | Available | Status |")
     print("| --- | --- | --- | --- |")
@@ -160,18 +214,26 @@ def accept_plan(project: Path, staged: Path, accepted_by: str, rationale: str) -
     accepted_at = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat()
 
     for update in plan.get("updates", []):
+        if update.get("validation_status") != "valid":
+            raise ValueError(f"cannot accept invalid knowledge pack: {update['pack_id']}")
         item = locked[update["pack_id"]]
         item["version"] = update["available_version"]
         item["manifest_sha256"] = update["manifest_sha256"]
+        item["db_sha256"] = update["db_sha256"]
         item["accepted_at"] = accepted_at
         item["accepted_by"] = accepted_by
         item["rationale"] = rationale
 
     for new_item in plan.get("available_new", []):
+        if new_item.get("status") == "available_invalid":
+            continue
+        if new_item.get("validation_status") != "valid":
+            raise ValueError(f"cannot accept invalid knowledge pack: {new_item['pack_id']}")
         locked[new_item["pack_id"]] = {
             "pack_id": new_item["pack_id"],
             "version": new_item["available_version"],
             "manifest_sha256": new_item["manifest_sha256"],
+            "db_sha256": new_item["db_sha256"],
             "accepted_at": accepted_at,
             "accepted_by": accepted_by,
             "rationale": rationale,
@@ -199,12 +261,16 @@ def sync_project_db_adoption(project: Path, lock: dict[str, Any]) -> None:
         if table_exists is None:
             return
 
+        existing_columns = {
+            row[1] for row in conn.execute("PRAGMA table_info(knowledge_pack_adoption)").fetchall()
+        }
         conn.execute("DELETE FROM knowledge_pack_adoption")
         rows = [
             (
                 str(item.get("pack_id", "")),
                 str(item.get("version", "")),
                 str(item.get("manifest_sha256", "")),
+                str(item.get("db_sha256", "")),
                 str(item.get("accepted_at", "")),
                 str(item.get("accepted_by", "")),
                 str(item.get("rationale", "")),
@@ -212,14 +278,25 @@ def sync_project_db_adoption(project: Path, lock: dict[str, Any]) -> None:
             )
             for item in lock.get("knowledge_packs", [])
         ]
-        conn.executemany(
-            """
-            INSERT INTO knowledge_pack_adoption(
-                pack_id, version, manifest_sha256, accepted_at, accepted_by, rationale, boundary
-            ) VALUES (?, ?, ?, ?, ?, ?, ?)
-            """,
-            rows,
-        )
+        if "db_sha256" in existing_columns:
+            conn.executemany(
+                """
+                INSERT INTO knowledge_pack_adoption(
+                    pack_id, version, manifest_sha256, db_sha256, accepted_at, accepted_by, rationale, boundary
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                rows,
+            )
+        else:
+            conn.executemany(
+                """
+                INSERT INTO knowledge_pack_adoption(
+                    pack_id, version, manifest_sha256, accepted_at, accepted_by, rationale, boundary
+                ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                [(pack, version, manifest_sha, accepted_at, accepted_by, rationale, boundary)
+                 for pack, version, manifest_sha, _db_sha, accepted_at, accepted_by, rationale, boundary in rows],
+            )
         conn.commit()
     finally:
         conn.close()
@@ -246,6 +323,8 @@ def main() -> int:
         plan = build_plan(args.project, args.packs)
         if args.command == "check":
             print_check(plan)
+            if plan["missing"] or plan["invalid"]:
+                return 1
         elif args.command == "plan":
             print(json.dumps(plan, indent=2, ensure_ascii=False))
         else:

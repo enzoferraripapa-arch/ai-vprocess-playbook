@@ -50,8 +50,13 @@ def create_schema(conn: sqlite3.Connection) -> None:
             name TEXT NOT NULL,
             value TEXT NOT NULL,
             source TEXT NOT NULL,
-            status TEXT NOT NULL,
-            boundary TEXT NOT NULL
+            status TEXT NOT NULL CHECK (
+                status IN ('accepted_local','candidate_only','candidate_ready_for_manual_review','gate_not_passed','open','open_not_passed','open_tbd','planned','recorded','rejected_as_authority','resolved_local')
+                OR status LIKE 'available_%'
+                OR status LIKE 'accepted_local_%'
+                OR status LIKE 'candidate_ready_for_manual_review_%'
+            ),
+            boundary TEXT NOT NULL CHECK (boundary LIKE 'NO-%' OR boundary LIKE 'MFG-NO-%' OR boundary LIKE 'SEC-NO-%')
         );
 
         CREATE TABLE evidence (
@@ -59,18 +64,23 @@ def create_schema(conn: sqlite3.Connection) -> None:
             title TEXT NOT NULL,
             location TEXT NOT NULL,
             owner TEXT NOT NULL,
-            status TEXT NOT NULL,
-            boundary TEXT NOT NULL
+            status TEXT NOT NULL CHECK (
+                status IN ('available','candidate_ready_for_manual_review','planned','recorded')
+                OR status LIKE 'available_%'
+                OR status LIKE 'candidate_ready_for_manual_review_%'
+            ),
+            boundary TEXT NOT NULL CHECK (boundary LIKE 'NO-%' OR boundary LIKE 'MFG-NO-%' OR boundary LIKE 'SEC-NO-%')
         );
 
         CREATE TABLE knowledge_pack_adoption (
             pack_id TEXT PRIMARY KEY,
             version TEXT NOT NULL,
             manifest_sha256 TEXT NOT NULL,
+            db_sha256 TEXT NOT NULL DEFAULT '',
             accepted_at TEXT NOT NULL,
             accepted_by TEXT NOT NULL,
             rationale TEXT NOT NULL,
-            boundary TEXT NOT NULL
+            boundary TEXT NOT NULL CHECK (boundary LIKE 'NO-%' OR boundary LIKE 'MFG-NO-%' OR boundary LIKE 'SEC-NO-%')
         );
 
         CREATE TABLE route_event (
@@ -79,8 +89,8 @@ def create_schema(conn: sqlite3.Connection) -> None:
             trigger TEXT NOT NULL,
             activity TEXT NOT NULL,
             output_candidate TEXT NOT NULL,
-            status TEXT NOT NULL,
-            boundary TEXT NOT NULL,
+            status TEXT NOT NULL CHECK (status IN ('opened','resolved_local','blocked','deferred')),
+            boundary TEXT NOT NULL CHECK (boundary LIKE 'NO-%' OR boundary LIKE 'MFG-NO-%' OR boundary LIKE 'SEC-NO-%'),
             created_at TEXT NOT NULL
         );
 
@@ -89,11 +99,11 @@ def create_schema(conn: sqlite3.Connection) -> None:
             route_event_id TEXT NOT NULL,
             question TEXT NOT NULL,
             selected_option TEXT NOT NULL,
-            status TEXT NOT NULL,
+            status TEXT NOT NULL CHECK (status IN ('draft','needs_review','accepted','rejected')),
             decided_by TEXT NOT NULL,
             decided_at TEXT NOT NULL,
             rationale TEXT NOT NULL,
-            boundary TEXT NOT NULL,
+            boundary TEXT NOT NULL CHECK (boundary LIKE 'NO-%' OR boundary LIKE 'MFG-NO-%' OR boundary LIKE 'SEC-NO-%'),
             FOREIGN KEY (route_event_id) REFERENCES route_event(route_event_id)
         );
 
@@ -101,11 +111,14 @@ def create_schema(conn: sqlite3.Connection) -> None:
             review_id TEXT PRIMARY KEY,
             decision_id TEXT NOT NULL,
             review_type TEXT NOT NULL,
-            status TEXT NOT NULL,
+            status TEXT NOT NULL CHECK (
+                status IN ('needs_review','rejected','blocked','accepted_local')
+                OR status LIKE 'accepted_local_%'
+            ),
             reviewer TEXT NOT NULL,
             reviewed_at TEXT NOT NULL,
             rationale TEXT NOT NULL,
-            boundary TEXT NOT NULL,
+            boundary TEXT NOT NULL CHECK (boundary LIKE 'NO-%' OR boundary LIKE 'MFG-NO-%' OR boundary LIKE 'SEC-NO-%'),
             FOREIGN KEY (decision_id) REFERENCES candidate_decision(decision_id)
         );
 
@@ -113,11 +126,14 @@ def create_schema(conn: sqlite3.Connection) -> None:
             handoff_id TEXT PRIMARY KEY,
             source_review_id TEXT NOT NULL,
             title TEXT NOT NULL,
-            status TEXT NOT NULL,
+            status TEXT NOT NULL CHECK (
+                status IN ('candidate_ready_for_manual_review','needs_review','rejected','blocked')
+                OR status LIKE 'candidate_ready_for_manual_review_%'
+            ),
             package_summary TEXT NOT NULL,
             excluded_counts_json TEXT NOT NULL,
             checksum_sha256 TEXT NOT NULL,
-            boundary TEXT NOT NULL,
+            boundary TEXT NOT NULL CHECK (boundary LIKE 'NO-%' OR boundary LIKE 'MFG-NO-%' OR boundary LIKE 'SEC-NO-%'),
             created_at TEXT NOT NULL,
             FOREIGN KEY (source_review_id) REFERENCES review_state(review_id)
         );
@@ -232,6 +248,7 @@ def seed_knowledge_lock(conn: sqlite3.Connection, lock: dict[str, Any]) -> None:
                 str(item.get("pack_id", "")),
                 str(item.get("version", "")),
                 str(item.get("manifest_sha256", "")),
+                str(item.get("db_sha256", "")),
                 str(item.get("accepted_at", "")),
                 str(item.get("accepted_by", "")),
                 str(item.get("rationale", "")),
@@ -241,8 +258,8 @@ def seed_knowledge_lock(conn: sqlite3.Connection, lock: dict[str, Any]) -> None:
     conn.executemany(
         """
         INSERT INTO knowledge_pack_adoption(
-            pack_id, version, manifest_sha256, accepted_at, accepted_by, rationale, boundary
-        ) VALUES (?, ?, ?, ?, ?, ?, ?)
+            pack_id, version, manifest_sha256, db_sha256, accepted_at, accepted_by, rationale, boundary
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """,
         rows,
     )

@@ -7,6 +7,7 @@
       "pack_id": "process-method",
       "version": "replace-with-version",
       "manifest_sha256": "replace-with-manifest-sha256",
+      "db_sha256": "replace-with-knowledge-db-sha256",
       "accepted_at": "replace-with-iso-8601-time",
       "accepted_by": "replace-with-reviewer",
       "rationale": "Initial project knowledge-pack baseline."

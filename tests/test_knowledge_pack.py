@@ -104,6 +104,48 @@ class KnowledgePackAcceptTests(unittest.TestCase):
 
             lock = json.loads((project_aiv / "knowledge_pack_lock.json").read_text(encoding="utf-8"))
             self.assertEqual([item["pack_id"] for item in lock["knowledge_packs"]], ["process-method"])
+            self.assertTrue(lock["knowledge_packs"][0]["db_sha256"])
+
+    def test_locked_manifest_without_real_db_is_invalid(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            project = root / "product"
+            packs = root / "packs"
+            project_aiv = project / ".aivprocess"
+            project_aiv.mkdir(parents=True)
+
+            self.write_json(
+                project_aiv / "knowledge_pack_lock.json",
+                {
+                    "project_id": "demo-product",
+                    "project_schema": "aivprocess-project/v1",
+                    "knowledge_packs": [
+                        {
+                            "pack_id": "security-privacy",
+                            "version": "0.1.0",
+                            "manifest_sha256": "example-only",
+                            "accepted_at": "2026-05-21T00:00:00Z",
+                            "accepted_by": "example-reviewer",
+                            "rationale": "Example lock.",
+                        }
+                    ],
+                },
+            )
+            self.write_json(
+                packs / "security-privacy" / "manifest.json",
+                {
+                    "pack_id": "security-privacy",
+                    "version": "0.1.0",
+                    "schema_version": "knowledge-pack-manifest/v1",
+                    "db_filename": "knowledge.db",
+                    "db_sha256": "example-only-not-a-real-db-hash",
+                    "status": "fictional_example_manifest",
+                },
+            )
+
+            plan = knowledge_pack.build_plan(project, packs)
+            self.assertEqual([item["pack_id"] for item in plan["invalid"]], ["security-privacy"])
+            self.assertEqual(plan["invalid"][0]["status"], "invalid_locked_pack")
 
     @staticmethod
     def write_json(path: Path, data: dict[str, object]) -> None:
@@ -113,6 +155,9 @@ class KnowledgePackAcceptTests(unittest.TestCase):
     @staticmethod
     def write_manifest(path: Path, pack_id: str, version: str) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
+        db_path = path.parent / "knowledge.db"
+        db_path.write_bytes(f"{pack_id}:{version}".encode("utf-8"))
+        db_sha256 = knowledge_pack.sha256_file(db_path)
         path.write_text(
             json.dumps(
                 {
@@ -120,6 +165,9 @@ class KnowledgePackAcceptTests(unittest.TestCase):
                     "name": pack_id,
                     "version": version,
                     "schema_version": "knowledge-pack-manifest/v1",
+                    "db_filename": "knowledge.db",
+                    "db_sha256": db_sha256,
+                    "status": "local_db_built",
                     "summary": f"{pack_id} test manifest",
                 },
                 indent=2,
