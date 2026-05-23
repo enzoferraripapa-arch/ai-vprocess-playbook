@@ -83,10 +83,11 @@ Render the sample routing matrix as Markdown:
 python tools/render_routing.py examples/sample_routing.json
 ```
 
-Check and plan common knowledge-pack updates without changing the project lock:
+Inspect the example knowledge-pack update plan without changing the project lock.
+The public examples are documentation fixtures; real adoption checks should point
+to a private `knowledge-packs/` directory containing actual `knowledge.db` files.
 
 ```bash
-python tools/knowledge_pack.py check --project examples/starter_project --packs examples/knowledge_packs
 python tools/knowledge_pack.py plan --project examples/starter_project --packs examples/knowledge_packs
 ```
 
