@@ -8,13 +8,14 @@ This repository uses the AI V-process starter layout.
 2. `.aivprocess/project_profile.json`
 3. `.aivprocess/requirements.json`
 4. `.aivprocess/reuse_assessment.json`
-5. `.aivprocess/knowledge_pack_lock.json`
-6. `.aivprocess/routing_matrix.json`
-7. `.aivprocess/project.db` if it exists
-8. `docs/review_brief_YYYYMMDD.md` if it exists
-9. `docs/no_x_rules.md`
-10. `docs/responsibility_boundary.md`
-11. `docs/handoff_template.md`
+5. `.aivprocess/feedback_disposition.json`
+6. `.aivprocess/knowledge_pack_lock.json`
+7. `.aivprocess/routing_matrix.json`
+8. `.aivprocess/project.db` if it exists
+9. `docs/review_brief_YYYYMMDD.md` if it exists
+10. `docs/no_x_rules.md`
+11. `docs/responsibility_boundary.md`
+12. `docs/handoff_template.md`
 
 ## Rules
 
@@ -29,11 +30,17 @@ This repository uses the AI V-process starter layout.
 - Keep legacy artifacts, reused components, previous approvals, existing tests,
   and delta changes in `.aivprocess/reuse_assessment.json` until applicability
   review and revalidation expectations are explicit.
+- Keep user requests, reviewer comments, management requests, and other AI
+  opinions as feedback candidates until they are classified and accepted or
+  rejected with safety, consistency, feasibility, and evidence rationale.
 - Keep reusable knowledge in external knowledge packs.
 - Do not paste private standards text, customer material, credentials, local
   hostnames, or private source paths into public artifacts.
 - Treat routes, decisions, traces, gates, and handoffs as candidates until a
   responsible human accepts them.
+- Do not force a requested change into the project if it is unsafe,
+  inconsistent, infeasible, out of scope, or unsupported by evidence. Record the
+  blocker in the Review Brief or project DB instead.
 - A local accepted state is not a formal ALM/QMS approval.
 - Use `tools/init_project_db.py`, `tools/record_local_handoff.py`, and
   `tools/export_handoff.py` for the starter DB workflow unless the project has

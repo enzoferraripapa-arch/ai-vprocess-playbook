@@ -50,6 +50,10 @@ class StarterRequirementTests(unittest.TestCase):
                     3,
                 )
                 self.assertEqual(
+                    conn.execute("SELECT COUNT(*) FROM feedback_item").fetchone()[0],
+                    2,
+                )
+                self.assertEqual(
                     conn.execute(
                         """
                         SELECT COUNT(*)
@@ -72,7 +76,10 @@ class StarterRequirementTests(unittest.TestCase):
             self.assertIn("### Requirement Trace Coverage", text)
             self.assertIn("### Requirement Gap Counters", text)
             self.assertIn("## Reuse And Delta Summary", text)
+            self.assertIn("## Feedback And Feasibility Summary", text)
             self.assertIn("NO-EXISTING-TEST-AS-REVALIDATION", text)
+            self.assertIn("NO-FEEDBACK-AS-REQUIREMENT", text)
+            self.assertIn("NO-IMPLEMENTATION-AS-VALIDATION", text)
 
 
 if __name__ == "__main__":

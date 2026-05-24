@@ -46,8 +46,15 @@ Formal systems keep official records and approvals.
 - Keep existing assets, previous approvals, reused components, existing tests,
   and small deltas in reuse/delta applicability review until current-project
   applicability and revalidation are explicit.
+- Keep user requests, reviewer comments, management requests, and other AI
+  opinions as feedback candidates until the project classifies them as accept,
+  partial, hold, or reject with safety, consistency, feasibility, and evidence
+  rationale.
 - Keep product-specific project DBs separate from shared knowledge-pack DBs.
 - Do not treat a skill, app, connector, or dashboard as the knowledge authority.
+- If a requested change is unsafe, inconsistent, infeasible, out of scope, or
+  unsupported by evidence, state the blocker instead of forcing a plausible
+  document or implementation.
 - When adding starter templates, keep them fictional and generic enough to copy
   into a new repository without leaking private context.
 - Starter project updates should keep `tools/generate_review_brief.py`,

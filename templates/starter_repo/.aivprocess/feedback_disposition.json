@@ -1,0 +1,31 @@
+{
+  "schema": "aivprocess-feedback-disposition/v1",
+  "items": [
+    {
+      "feedback_id": "FDBK-001",
+      "source": "starter-example-review",
+      "requested_action": "Treat the starter output as ready for formal ALM/QMS use.",
+      "affected_artifacts": "README.md; docs/review_brief_YYYYMMDD.md; exports/handoff",
+      "disposition": "rejected",
+      "rationale": "The starter output is a candidate structure and review packet only. Formal records require project-owned evidence and formal-system approval.",
+      "safety_feasibility_check": "Reject as authority; safe to keep as a local review candidate.",
+      "evidence_basis": "docs/no_x_rules.md; docs/responsibility_boundary.md",
+      "trace_or_hold_target": "NO-LOCAL-ACCEPTED-AS-FORMAL-APPROVAL",
+      "status": "candidate_ready_for_manual_review",
+      "boundary": "NO-FEEDBACK-AS-REQUIREMENT"
+    },
+    {
+      "feedback_id": "FDBK-002",
+      "source": "ai-review-example",
+      "requested_action": "Implement every AI review suggestion because the model agrees with the critique.",
+      "affected_artifacts": ".aivprocess/requirements.json; .aivprocess/routing_matrix.json",
+      "disposition": "held",
+      "rationale": "AI agreement is useful critique input, but each item still needs source evidence, feasibility review, and project-owner disposition.",
+      "safety_feasibility_check": "Hold until affected requirements, risks, and evidence targets are identified.",
+      "evidence_basis": "docs/no_x_rules.md",
+      "trace_or_hold_target": "feedback review backlog",
+      "status": "needs_review",
+      "boundary": "NO-AI-AGREEMENT-AS-EVIDENCE"
+    }
+  ]
+}

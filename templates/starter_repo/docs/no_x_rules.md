@@ -17,6 +17,11 @@ Adopt these rules before using AI-generated engineering output in a project.
 | `NO-SMALL-DELTA-AS-LOW-RISK` | A small-looking delta is not automatically low risk. |
 | `NO-REUSE-AS-TRACE-CLOSURE` | Reuse does not close traceability. |
 | `NO-EXISTING-TEST-AS-REVALIDATION` | Existing tests are not current revalidation without current evidence. |
+| `NO-FEEDBACK-AS-REQUIREMENT` | Feedback, review comments, user requests, and AI opinions are not accepted requirements. |
+| `NO-REQUEST-AS-SAFE-ACTION` | A requested action is not automatically safe, permitted, feasible, or in scope. |
+| `NO-AI-AGREEMENT-AS-EVIDENCE` | Another AI agreeing with a proposal is not evidence. |
+| `NO-IMPLEMENTATION-AS-VALIDATION` | Implementing a change does not validate the idea. |
+| `NO-CONSENSUS-AS-CORRECTNESS` | Agreement is not proof of correctness. |
 
 If a section has no evidence yet, write that directly. Do not leave a polite
 empty placeholder that looks like a record exists.

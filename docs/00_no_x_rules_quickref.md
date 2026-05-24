@@ -21,6 +21,11 @@ first.
 | `NO-SMALL-DELTA-AS-LOW-RISK` | Small-looking changes can still carry high hidden risk. |
 | `NO-REUSE-AS-TRACE-CLOSURE` | Reusing something does not close traceability. |
 | `NO-EXISTING-TEST-AS-REVALIDATION` | Existing tests are not current revalidation without applicability evidence. |
+| `NO-FEEDBACK-AS-REQUIREMENT` | A comment, request, review finding, or AI opinion is not an accepted requirement. |
+| `NO-REQUEST-AS-SAFE-ACTION` | A requested action is not automatically safe, permitted, feasible, or in scope. |
+| `NO-AI-AGREEMENT-AS-EVIDENCE` | Another AI agreeing with a proposal is not evidence. |
+| `NO-IMPLEMENTATION-AS-VALIDATION` | Implementing a change does not prove it is valid, safe, or complete. |
+| `NO-CONSENSUS-AS-CORRECTNESS` | Agreement is a signal, not proof of correctness. |
 
 ## Empty Evidence Sections
 

@@ -15,6 +15,7 @@ LOCK = ROOT / ".aivprocess" / "knowledge_pack_lock.json"
 ROUTING = ROOT / ".aivprocess" / "routing_matrix.json"
 REQUIREMENTS = ROOT / ".aivprocess" / "requirements.json"
 REUSE = ROOT / ".aivprocess" / "reuse_assessment.json"
+FEEDBACK = ROOT / ".aivprocess" / "feedback_disposition.json"
 
 
 def utc_now() -> str:
@@ -210,6 +211,24 @@ def create_schema(conn: sqlite3.Connection) -> None:
             required_revalidation TEXT NOT NULL,
             status TEXT NOT NULL CHECK (
                 status IN ('candidate_ready_for_manual_review','needs_review','blocked','accepted_local','rejected','planned','open')
+            ),
+            boundary TEXT NOT NULL CHECK (boundary LIKE 'NO-%' OR boundary LIKE 'MFG-NO-%' OR boundary LIKE 'SEC-NO-%')
+        );
+
+        CREATE TABLE feedback_item (
+            feedback_id TEXT PRIMARY KEY,
+            source TEXT NOT NULL,
+            requested_action TEXT NOT NULL,
+            affected_artifacts TEXT NOT NULL,
+            disposition TEXT NOT NULL CHECK (
+                disposition IN ('accepted','partially_accepted','held','rejected','needs_owner_decision')
+            ),
+            rationale TEXT NOT NULL,
+            safety_feasibility_check TEXT NOT NULL,
+            evidence_basis TEXT NOT NULL,
+            trace_or_hold_target TEXT NOT NULL,
+            status TEXT NOT NULL CHECK (
+                status IN ('candidate_ready_for_manual_review','accepted_local','held','rejected','needs_review')
             ),
             boundary TEXT NOT NULL CHECK (boundary LIKE 'NO-%' OR boundary LIKE 'MFG-NO-%' OR boundary LIKE 'SEC-NO-%')
         );
@@ -513,6 +532,45 @@ def seed_reuse_assessment(conn: sqlite3.Connection, reuse: dict[str, Any]) -> No
     )
 
 
+def seed_feedback(conn: sqlite3.Connection, feedback: dict[str, Any]) -> None:
+    rows = []
+    required = [
+        "feedback_id",
+        "source",
+        "requested_action",
+        "affected_artifacts",
+        "disposition",
+        "rationale",
+        "safety_feasibility_check",
+        "evidence_basis",
+        "trace_or_hold_target",
+        "status",
+        "boundary",
+    ]
+    seen: set[str] = set()
+    for index, item in enumerate(feedback.get("items", []), 1):
+        if not isinstance(item, dict):
+            raise ValueError(f"feedback item #{index} is not an object")
+        missing = [field for field in required if not str(item.get(field, "")).strip()]
+        if missing:
+            raise ValueError(f"feedback item #{index} missing fields: {', '.join(missing)}")
+        feedback_id = str(item["feedback_id"])
+        if feedback_id in seen:
+            raise ValueError(f"duplicate feedback_id: {feedback_id}")
+        seen.add(feedback_id)
+        rows.append(tuple(str(item[field]) for field in required))
+    conn.executemany(
+        """
+        INSERT INTO feedback_item(
+            feedback_id, source, requested_action, affected_artifacts, disposition,
+            rationale, safety_feasibility_check, evidence_basis, trace_or_hold_target,
+            status, boundary
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        rows,
+    )
+
+
 def seed_knowledge_lock(conn: sqlite3.Connection, lock: dict[str, Any]) -> None:
     rows = []
     for item in lock.get("knowledge_packs", []):
@@ -544,6 +602,7 @@ def initialize(db_path: Path) -> None:
     routing = read_json(ROUTING)
     requirements = read_json(REQUIREMENTS)
     reuse = read_json(REUSE)
+    feedback = read_json(FEEDBACK)
     created_at = utc_now()
     with connect_new(db_path) as conn:
         create_schema(conn)
@@ -552,6 +611,7 @@ def initialize(db_path: Path) -> None:
         seed_evidence(conn)
         seed_requirements(conn, requirements)
         seed_reuse_assessment(conn, reuse)
+        seed_feedback(conn, feedback)
         seed_knowledge_lock(conn, lock)
         conn.commit()
 
