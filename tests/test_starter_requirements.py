@@ -34,6 +34,18 @@ class StarterRequirementTests(unittest.TestCase):
                     3,
                 )
                 self.assertEqual(
+                    conn.execute("SELECT COUNT(*) FROM requirement_classification").fetchone()[0],
+                    27,
+                )
+                self.assertEqual(
+                    conn.execute("SELECT COUNT(*) FROM requirement_allocation").fetchone()[0],
+                    3,
+                )
+                self.assertEqual(
+                    conn.execute("SELECT COUNT(*) FROM requirement_trace").fetchone()[0],
+                    9,
+                )
+                self.assertEqual(
                     conn.execute(
                         """
                         SELECT COUNT(*)
@@ -51,6 +63,10 @@ class StarterRequirementTests(unittest.TestCase):
             text = brief.read_text(encoding="utf-8")
             self.assertIn("## Requirement Summary", text)
             self.assertIn("### Nonfunctional Constraint Origins", text)
+            self.assertIn("### Requirement Classification Coverage", text)
+            self.assertIn("### Requirement Allocation Coverage", text)
+            self.assertIn("### Requirement Trace Coverage", text)
+            self.assertIn("### Requirement Gap Counters", text)
 
 
 if __name__ == "__main__":

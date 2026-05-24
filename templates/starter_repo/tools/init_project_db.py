@@ -112,6 +112,81 @@ def create_schema(conn: sqlite3.Connection) -> None:
             )
         );
 
+        CREATE TABLE requirement_classification (
+            requirement_id TEXT NOT NULL,
+            classification_type TEXT NOT NULL CHECK (
+                classification_type IN (
+                    'requirement_level',
+                    'source_authority',
+                    'risk_impact',
+                    'safety_class',
+                    'security_impact',
+                    'privacy_impact',
+                    'usability_impact',
+                    'applicability',
+                    'baseline',
+                    'data_freshness',
+                    'formal_target',
+                    'gate_tier',
+                    'maturity'
+                )
+            ),
+            value TEXT NOT NULL,
+            rationale TEXT NOT NULL,
+            source TEXT NOT NULL,
+            boundary TEXT NOT NULL CHECK (boundary LIKE 'NO-%' OR boundary LIKE 'MFG-NO-%' OR boundary LIKE 'SEC-NO-%'),
+            PRIMARY KEY (requirement_id, classification_type, value),
+            FOREIGN KEY (requirement_id) REFERENCES requirement_item(requirement_id) ON DELETE CASCADE
+        );
+
+        CREATE TABLE requirement_allocation (
+            requirement_id TEXT NOT NULL,
+            target_layer TEXT NOT NULL CHECK (
+                target_layer IN (
+                    'stakeholder','system','software','hardware','mechanical','electrical','firmware',
+                    'application','cloud','data','configuration','manufacturing','service','post_market','process','unknown'
+                )
+            ),
+            target_component TEXT NOT NULL,
+            owner TEXT NOT NULL,
+            rationale TEXT NOT NULL,
+            status TEXT NOT NULL CHECK (
+                status IN ('accepted_local','candidate_only','candidate_ready_for_manual_review','gate_not_passed','open','open_not_passed','open_tbd','planned','recorded','rejected_as_authority','resolved_local')
+                OR status LIKE 'available_%'
+                OR status LIKE 'accepted_local_%'
+                OR status LIKE 'candidate_ready_for_manual_review_%'
+            ),
+            boundary TEXT NOT NULL CHECK (boundary LIKE 'NO-%' OR boundary LIKE 'MFG-NO-%' OR boundary LIKE 'SEC-NO-%'),
+            PRIMARY KEY (requirement_id, target_layer, target_component),
+            FOREIGN KEY (requirement_id) REFERENCES requirement_item(requirement_id) ON DELETE CASCADE
+        );
+
+        CREATE TABLE requirement_trace (
+            requirement_id TEXT NOT NULL,
+            target_type TEXT NOT NULL CHECK (
+                target_type IN (
+                    'requirement','design','risk','test','evidence','handoff','component','interface',
+                    'document','issue','baseline','configuration'
+                )
+            ),
+            target_id TEXT NOT NULL,
+            relation TEXT NOT NULL CHECK (
+                relation IN (
+                    'satisfies','verifies','mitigates','allocates_to','depends_on','conflicts_with',
+                    'assumes','derived_from','feeds_handoff','references_evidence'
+                )
+            ),
+            status TEXT NOT NULL CHECK (
+                status IN ('accepted_local','candidate_only','candidate_ready_for_manual_review','gate_not_passed','open','open_not_passed','open_tbd','planned','recorded','rejected_as_authority','resolved_local')
+                OR status LIKE 'available_%'
+                OR status LIKE 'accepted_local_%'
+                OR status LIKE 'candidate_ready_for_manual_review_%'
+            ),
+            boundary TEXT NOT NULL CHECK (boundary LIKE 'NO-%' OR boundary LIKE 'MFG-NO-%' OR boundary LIKE 'SEC-NO-%'),
+            PRIMARY KEY (requirement_id, target_type, target_id, relation),
+            FOREIGN KEY (requirement_id) REFERENCES requirement_item(requirement_id) ON DELETE CASCADE
+        );
+
         CREATE TABLE knowledge_pack_adoption (
             pack_id TEXT PRIMARY KEY,
             version TEXT NOT NULL,
@@ -282,10 +357,14 @@ def seed_evidence(conn: sqlite3.Connection) -> None:
 
 def seed_requirements(conn: sqlite3.Connection, requirements: dict[str, Any]) -> None:
     rows = []
+    classification_rows = []
+    allocation_rows = []
+    trace_rows = []
     for item in requirements.get("requirements", []):
+        requirement_id = str(item.get("requirement_id", ""))
         rows.append(
             (
-                str(item.get("requirement_id", "")),
+                requirement_id,
                 str(item.get("title", "")),
                 str(item.get("requirement_type", "")),
                 str(item.get("priority", "")),
@@ -298,6 +377,40 @@ def seed_requirements(conn: sqlite3.Connection, requirements: dict[str, Any]) ->
                 str(item.get("boundary", "NO-CANDIDATE-AS-RECORD")),
             )
         )
+        for classification in item.get("classifications", []):
+            classification_rows.append(
+                (
+                    requirement_id,
+                    str(classification.get("classification_type", "")),
+                    str(classification.get("value", "")),
+                    str(classification.get("rationale", "")),
+                    str(classification.get("source", item.get("source", ""))),
+                    str(classification.get("boundary", item.get("boundary", "NO-CANDIDATE-AS-RECORD"))),
+                )
+            )
+        for allocation in item.get("allocations", []):
+            allocation_rows.append(
+                (
+                    requirement_id,
+                    str(allocation.get("target_layer", "")),
+                    str(allocation.get("target_component", "")),
+                    str(allocation.get("owner", "")),
+                    str(allocation.get("rationale", "")),
+                    str(allocation.get("status", item.get("status", "candidate_ready_for_manual_review"))),
+                    str(allocation.get("boundary", item.get("boundary", "NO-CANDIDATE-AS-RECORD"))),
+                )
+            )
+        for trace in item.get("traces", []):
+            trace_rows.append(
+                (
+                    requirement_id,
+                    str(trace.get("target_type", "")),
+                    str(trace.get("target_id", "")),
+                    str(trace.get("relation", "")),
+                    str(trace.get("status", item.get("status", "candidate_ready_for_manual_review"))),
+                    str(trace.get("boundary", item.get("boundary", "NO-CANDIDATE-AS-RECORD"))),
+                )
+            )
     conn.executemany(
         """
         INSERT INTO requirement_item(
@@ -306,6 +419,30 @@ def seed_requirements(conn: sqlite3.Connection, requirements: dict[str, Any]) ->
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         rows,
+    )
+    conn.executemany(
+        """
+        INSERT INTO requirement_classification(
+            requirement_id, classification_type, value, rationale, source, boundary
+        ) VALUES (?, ?, ?, ?, ?, ?)
+        """,
+        classification_rows,
+    )
+    conn.executemany(
+        """
+        INSERT INTO requirement_allocation(
+            requirement_id, target_layer, target_component, owner, rationale, status, boundary
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)
+        """,
+        allocation_rows,
+    )
+    conn.executemany(
+        """
+        INSERT INTO requirement_trace(
+            requirement_id, target_type, target_id, relation, status, boundary
+        ) VALUES (?, ?, ?, ?, ?, ?)
+        """,
+        trace_rows,
     )
 
 

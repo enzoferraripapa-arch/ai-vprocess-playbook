@@ -22,6 +22,9 @@ This repository uses the AI V-process starter layout.
   and the project DB. Nonfunctional requirements must identify whether they are
   driven by architecture, human factors/ergonomics, regulation, safety,
   security, operation, manufacturing, evidence, or mixed constraints.
+- Use requirement sidecars for level/source/risk/applicability/baseline/freshness
+  classification, layer/component/owner allocation, and candidate traces to
+  design/risk/test/evidence/handoff targets.
 - Keep reusable knowledge in external knowledge packs.
 - Do not paste private standards text, customer material, credentials, local
   hostnames, or private source paths into public artifacts.

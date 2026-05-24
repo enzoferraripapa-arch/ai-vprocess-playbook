@@ -1,5 +1,5 @@
 {
-  "schema": "aivprocess-requirements/v1",
+  "schema": "aivprocess-requirements/v2",
   "boundary": "NO-CANDIDATE-AS-RECORD",
   "requirements": [
     {
@@ -13,7 +13,105 @@
       "acceptance_criteria": "A reviewer can trace the workflow to at least one user need, one design element, and one verification candidate.",
       "verification_method": "workflow review plus trace inspection",
       "status": "candidate_ready_for_manual_review",
-      "boundary": "NO-CANDIDATE-AS-RECORD"
+      "boundary": "NO-CANDIDATE-AS-RECORD",
+      "classifications": [
+        {
+          "classification_type": "requirement_level",
+          "value": "system",
+          "rationale": "Sets the abstraction layer before allocation and trace review.",
+          "source": ".aivprocess/project_profile.json",
+          "boundary": "NO-CANDIDATE-AS-RECORD"
+        },
+        {
+          "classification_type": "source_authority",
+          "value": "project_configuration",
+          "rationale": "Separates project-local inputs from formal external authority.",
+          "source": ".aivprocess/project_profile.json",
+          "boundary": "NO-CANDIDATE-AS-RECORD"
+        },
+        {
+          "classification_type": "risk_impact",
+          "value": "medium",
+          "rationale": "Prioritizes review depth without claiming safety or compliance approval.",
+          "source": ".aivprocess/project_profile.json",
+          "boundary": "NO-CANDIDATE-AS-RECORD"
+        },
+        {
+          "classification_type": "applicability",
+          "value": "applicable_to_current_project",
+          "rationale": "The requirement is in scope for the current product workspace unless later rejected by human review.",
+          "source": ".aivprocess/project_profile.json",
+          "boundary": "NO-CANDIDATE-AS-RECORD"
+        },
+        {
+          "classification_type": "baseline",
+          "value": "current_local_snapshot",
+          "rationale": "Records that this is tied to the current local project snapshot, not a formal released baseline.",
+          "source": ".aivprocess/requirements.json",
+          "boundary": "NO-LOCAL-ACCEPTED-AS-FORMAL-APPROVAL"
+        },
+        {
+          "classification_type": "data_freshness",
+          "value": "reviewed_or_generated_on_2026-05-24",
+          "rationale": "Makes data freshness visible for later re-review.",
+          "source": ".aivprocess/requirements.json",
+          "boundary": "NO-CANDIDATE-AS-RECORD"
+        },
+        {
+          "classification_type": "formal_target",
+          "value": "alm_requirement_work_item_candidate",
+          "rationale": "Identifies the likely formal-system candidate target while preserving handoff boundaries.",
+          "source": ".aivprocess/requirements.json",
+          "boundary": "NO-HANDOFF-AS-IMPORT"
+        },
+        {
+          "classification_type": "gate_tier",
+          "value": "peer_review",
+          "rationale": "Separates peer review, engineering approval, and stronger formal review expectations.",
+          "source": ".aivprocess/requirements.json",
+          "boundary": "NO-GATE-CANDIDATE-AS-PASS"
+        },
+        {
+          "classification_type": "maturity",
+          "value": "candidate_ready_for_manual_review",
+          "rationale": "Mirrors the local maturity state without turning it into formal approval.",
+          "source": ".aivprocess/requirements.json",
+          "boundary": "NO-CANDIDATE-AS-RECORD"
+        }
+      ],
+      "allocations": [
+        {
+          "target_layer": "system",
+          "target_component": "primary-user-workflow",
+          "owner": "project owner",
+          "rationale": "Makes the likely engineering owner visible before design/test/handoff work is planned.",
+          "status": "candidate_ready_for_manual_review",
+          "boundary": "NO-CANDIDATE-AS-RECORD"
+        }
+      ],
+      "traces": [
+        {
+          "target_type": "document",
+          "target_id": ".aivprocess/project_profile.json",
+          "relation": "derived_from",
+          "status": "candidate_ready_for_manual_review",
+          "boundary": "NO-TRACE-CANDIDATE-AS-TRACEABILITY"
+        },
+        {
+          "target_type": "test",
+          "target_id": "VERIFY-REQ-FUNC-001",
+          "relation": "verifies",
+          "status": "planned",
+          "boundary": "NO-CANDIDATE-AS-RECORD"
+        },
+        {
+          "target_type": "handoff",
+          "target_id": "HANDOFF-REQ-FUNC-001",
+          "relation": "feeds_handoff",
+          "status": "candidate_ready_for_manual_review",
+          "boundary": "NO-HANDOFF-AS-IMPORT"
+        }
+      ]
     },
     {
       "requirement_id": "REQ-NFR-ARCH-001",
@@ -26,7 +124,105 @@
       "acceptance_criteria": "A reviewer can identify impacted components, interfaces, data, and evidence records for a representative change.",
       "verification_method": "architecture review and impact-analysis rehearsal",
       "status": "candidate_ready_for_manual_review",
-      "boundary": "NO-CANDIDATE-AS-RECORD"
+      "boundary": "NO-CANDIDATE-AS-RECORD",
+      "classifications": [
+        {
+          "classification_type": "requirement_level",
+          "value": "system",
+          "rationale": "Sets the abstraction layer before allocation and trace review.",
+          "source": ".aivprocess/project_profile.json",
+          "boundary": "NO-CANDIDATE-AS-RECORD"
+        },
+        {
+          "classification_type": "source_authority",
+          "value": "project_configuration",
+          "rationale": "Separates project-local inputs from formal external authority.",
+          "source": ".aivprocess/project_profile.json",
+          "boundary": "NO-CANDIDATE-AS-RECORD"
+        },
+        {
+          "classification_type": "risk_impact",
+          "value": "normal",
+          "rationale": "Prioritizes review depth without claiming safety or compliance approval.",
+          "source": ".aivprocess/project_profile.json",
+          "boundary": "NO-CANDIDATE-AS-RECORD"
+        },
+        {
+          "classification_type": "applicability",
+          "value": "applicable_to_current_project",
+          "rationale": "The requirement is in scope for the current product workspace unless later rejected by human review.",
+          "source": ".aivprocess/project_profile.json",
+          "boundary": "NO-CANDIDATE-AS-RECORD"
+        },
+        {
+          "classification_type": "baseline",
+          "value": "current_local_snapshot",
+          "rationale": "Records that this is tied to the current local project snapshot, not a formal released baseline.",
+          "source": ".aivprocess/requirements.json",
+          "boundary": "NO-LOCAL-ACCEPTED-AS-FORMAL-APPROVAL"
+        },
+        {
+          "classification_type": "data_freshness",
+          "value": "reviewed_or_generated_on_2026-05-24",
+          "rationale": "Makes data freshness visible for later re-review.",
+          "source": ".aivprocess/requirements.json",
+          "boundary": "NO-CANDIDATE-AS-RECORD"
+        },
+        {
+          "classification_type": "formal_target",
+          "value": "alm_quality_attribute_work_item_candidate",
+          "rationale": "Identifies the likely formal-system candidate target while preserving handoff boundaries.",
+          "source": ".aivprocess/requirements.json",
+          "boundary": "NO-HANDOFF-AS-IMPORT"
+        },
+        {
+          "classification_type": "gate_tier",
+          "value": "peer_review",
+          "rationale": "Separates peer review, engineering approval, and stronger formal review expectations.",
+          "source": ".aivprocess/requirements.json",
+          "boundary": "NO-GATE-CANDIDATE-AS-PASS"
+        },
+        {
+          "classification_type": "maturity",
+          "value": "candidate_ready_for_manual_review",
+          "rationale": "Mirrors the local maturity state without turning it into formal approval.",
+          "source": ".aivprocess/requirements.json",
+          "boundary": "NO-CANDIDATE-AS-RECORD"
+        }
+      ],
+      "allocations": [
+        {
+          "target_layer": "system",
+          "target_component": "architecture-change-impact-boundary",
+          "owner": "system architect",
+          "rationale": "Makes the likely engineering owner visible before design/test/handoff work is planned.",
+          "status": "candidate_ready_for_manual_review",
+          "boundary": "NO-CANDIDATE-AS-RECORD"
+        }
+      ],
+      "traces": [
+        {
+          "target_type": "document",
+          "target_id": ".aivprocess/project_profile.json",
+          "relation": "derived_from",
+          "status": "candidate_ready_for_manual_review",
+          "boundary": "NO-TRACE-CANDIDATE-AS-TRACEABILITY"
+        },
+        {
+          "target_type": "test",
+          "target_id": "VERIFY-REQ-NFR-ARCH-001",
+          "relation": "verifies",
+          "status": "planned",
+          "boundary": "NO-CANDIDATE-AS-RECORD"
+        },
+        {
+          "target_type": "handoff",
+          "target_id": "HANDOFF-REQ-NFR-ARCH-001",
+          "relation": "feeds_handoff",
+          "status": "candidate_ready_for_manual_review",
+          "boundary": "NO-HANDOFF-AS-IMPORT"
+        }
+      ]
     },
     {
       "requirement_id": "REQ-NFR-HFE-001",
@@ -39,7 +235,112 @@
       "acceptance_criteria": "The Review Brief shows functional/nonfunctional requirement counts, priorities, NFR origins, open conditions, and No-X boundaries.",
       "verification_method": "review-brief inspection",
       "status": "candidate_ready_for_manual_review",
-      "boundary": "NO-CANDIDATE-AS-RECORD"
+      "boundary": "NO-CANDIDATE-AS-RECORD",
+      "classifications": [
+        {
+          "classification_type": "requirement_level",
+          "value": "stakeholder_or_system",
+          "rationale": "Sets the abstraction layer before allocation and trace review.",
+          "source": ".aivprocess/project_profile.json",
+          "boundary": "NO-CANDIDATE-AS-RECORD"
+        },
+        {
+          "classification_type": "source_authority",
+          "value": "project_configuration",
+          "rationale": "Separates project-local inputs from formal external authority.",
+          "source": ".aivprocess/project_profile.json",
+          "boundary": "NO-CANDIDATE-AS-RECORD"
+        },
+        {
+          "classification_type": "risk_impact",
+          "value": "medium",
+          "rationale": "Prioritizes review depth without claiming safety or compliance approval.",
+          "source": ".aivprocess/project_profile.json",
+          "boundary": "NO-CANDIDATE-AS-RECORD"
+        },
+        {
+          "classification_type": "applicability",
+          "value": "applicable_to_current_project",
+          "rationale": "The requirement is in scope for the current product workspace unless later rejected by human review.",
+          "source": ".aivprocess/project_profile.json",
+          "boundary": "NO-CANDIDATE-AS-RECORD"
+        },
+        {
+          "classification_type": "baseline",
+          "value": "current_local_snapshot",
+          "rationale": "Records that this is tied to the current local project snapshot, not a formal released baseline.",
+          "source": ".aivprocess/requirements.json",
+          "boundary": "NO-LOCAL-ACCEPTED-AS-FORMAL-APPROVAL"
+        },
+        {
+          "classification_type": "data_freshness",
+          "value": "reviewed_or_generated_on_2026-05-24",
+          "rationale": "Makes data freshness visible for later re-review.",
+          "source": ".aivprocess/requirements.json",
+          "boundary": "NO-CANDIDATE-AS-RECORD"
+        },
+        {
+          "classification_type": "formal_target",
+          "value": "alm_quality_attribute_work_item_candidate",
+          "rationale": "Identifies the likely formal-system candidate target while preserving handoff boundaries.",
+          "source": ".aivprocess/requirements.json",
+          "boundary": "NO-HANDOFF-AS-IMPORT"
+        },
+        {
+          "classification_type": "gate_tier",
+          "value": "peer_plus_owner_review",
+          "rationale": "Separates peer review, engineering approval, and stronger formal review expectations.",
+          "source": ".aivprocess/requirements.json",
+          "boundary": "NO-GATE-CANDIDATE-AS-PASS"
+        },
+        {
+          "classification_type": "maturity",
+          "value": "candidate_ready_for_manual_review",
+          "rationale": "Mirrors the local maturity state without turning it into formal approval.",
+          "source": ".aivprocess/requirements.json",
+          "boundary": "NO-CANDIDATE-AS-RECORD"
+        }
+      ],
+      "allocations": [
+        {
+          "target_layer": "process",
+          "target_component": "human-review-brief",
+          "owner": "human reviewer",
+          "rationale": "Makes the likely engineering owner visible before design/test/handoff work is planned.",
+          "status": "candidate_ready_for_manual_review",
+          "boundary": "NO-CANDIDATE-AS-RECORD"
+        }
+      ],
+      "traces": [
+        {
+          "target_type": "document",
+          "target_id": ".aivprocess/project_profile.json",
+          "relation": "derived_from",
+          "status": "candidate_ready_for_manual_review",
+          "boundary": "NO-TRACE-CANDIDATE-AS-TRACEABILITY"
+        },
+        {
+          "target_type": "test",
+          "target_id": "VERIFY-REQ-NFR-HFE-001",
+          "relation": "verifies",
+          "status": "planned",
+          "boundary": "NO-CANDIDATE-AS-RECORD"
+        },
+        {
+          "target_type": "handoff",
+          "target_id": "HANDOFF-REQ-NFR-HFE-001",
+          "relation": "feeds_handoff",
+          "status": "candidate_ready_for_manual_review",
+          "boundary": "NO-HANDOFF-AS-IMPORT"
+        }
+      ]
     }
-  ]
+  ],
+  "sidecar_model": {
+    "requirement_item": "requirement text, type, priority, NFR origin, verification method, and local status",
+    "requirement_classification": "level, source authority, risk impact, applicability, baseline, freshness, formal target, gate tier, and maturity",
+    "requirement_allocation": "target layer, target component, owner, rationale, and local allocation status",
+    "requirement_trace": "candidate links to source documents, verification, handoff, dependencies, risks, evidence, or design targets",
+    "boundary": "Sidecar rows are review aids, not formal ALM/QMS/customer records."
+  }
 }

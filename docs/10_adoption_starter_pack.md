@@ -21,7 +21,7 @@ The template contains:
 | `README.md` | Local project entry point. |
 | `AGENTS.md` | Instructions for AI coding agents. |
 | `.aivprocess/project_profile.json` | Product-specific facts and scope. |
-| `.aivprocess/requirements.json` | Product-specific functional/nonfunctional requirement candidates, priority, and NFR constraint origin. |
+| `.aivprocess/requirements.json` | Product-specific functional/nonfunctional requirement candidates, priority, NFR constraint origin, and sidecar classification/allocation/trace rows. |
 | `.aivprocess/knowledge_pack_lock.json` | Exact shared knowledge-pack versions used. |
 | `.aivprocess/routing_matrix.json` | Local activity routing candidates. |
 | `docs/no_x_rules.md` | Boundary rules adopted by the project. |
@@ -38,13 +38,14 @@ The template contains:
 1. Replace fictional product text in `README.md`.
 2. Fill `.aivprocess/project_profile.json`.
 3. Fill `.aivprocess/requirements.json` with functional requirements, nonfunctional requirements, priority, and whether each NFR is driven by architecture, human factors/ergonomics, regulation, safety, security, operation, manufacturing, evidence, or mixed constraints.
-4. Point `.aivprocess/knowledge_pack_lock.json` at the knowledge packs the
+4. Add requirement sidecars for level, source authority, risk impact, applicability, baseline, data freshness, formal target, gate tier, maturity, allocation owner, and candidate traces to design/risk/test/evidence/handoff targets.
+5. Point `.aivprocess/knowledge_pack_lock.json` at the knowledge packs the
    project actually uses.
-5. Review `.aivprocess/routing_matrix.json`.
-6. Initialize `.aivprocess/project.db`.
-7. Run one local review and handoff rehearsal.
-8. Generate the Review Brief as the first human-facing packet.
-9. Run the safety gate.
+6. Review `.aivprocess/routing_matrix.json`.
+7. Initialize `.aivprocess/project.db`.
+8. Run one local review and handoff rehearsal.
+9. Generate the Review Brief as the first human-facing packet.
+10. Run the safety gate.
 
 ```bash
 python tools/init_project_db.py
@@ -122,6 +123,8 @@ Before calling a project "set up", check:
 - functional and nonfunctional requirements have priority and acceptance criteria;
 - nonfunctional requirements distinguish architecture-driven constraints from
   human-factors/ergonomics constraints and other constraint origins;
+- every requirement has sidecar classification, allocation, and trace rows, or
+  the Review Brief explicitly shows the missing coverage;
 - knowledge pack lock names exact pack versions and hashes;
 - routing matrix has project-specific triggers, not only template examples;
 - responsibility boundary is accepted by the project owner;

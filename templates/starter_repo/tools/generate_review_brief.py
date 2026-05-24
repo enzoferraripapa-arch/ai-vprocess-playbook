@@ -86,6 +86,9 @@ def db_counts(conn: sqlite3.Connection) -> list[dict[str, Any]]:
         "project_fact",
         "evidence",
         "requirement_item",
+        "requirement_classification",
+        "requirement_allocation",
+        "requirement_trace",
         "route_event",
         "candidate_decision",
         "review_state",
@@ -147,6 +150,9 @@ def boundary_counts(conn: sqlite3.Connection) -> list[dict[str, Any]]:
         "SELECT boundary FROM project_fact",
         "SELECT boundary FROM evidence",
         "SELECT boundary FROM requirement_item",
+        "SELECT boundary FROM requirement_classification",
+        "SELECT boundary FROM requirement_allocation",
+        "SELECT boundary FROM requirement_trace",
         "SELECT boundary FROM route_event",
         "SELECT boundary FROM candidate_decision",
         "SELECT boundary FROM review_state",
@@ -169,7 +175,96 @@ def boundary_counts(conn: sqlite3.Connection) -> list[dict[str, Any]]:
 
 def requirement_summary(conn: sqlite3.Connection) -> dict[str, Any]:
     if not table_exists(conn, "requirement_item"):
-        return {"type_counts": [], "priority_counts": [], "nfr_origin_counts": [], "open_tbd": 0, "unknown_priority": 0}
+        return {
+            "type_counts": [],
+            "priority_counts": [],
+            "nfr_origin_counts": [],
+            "classification_counts": [],
+            "allocation_counts": [],
+            "trace_counts": [],
+            "open_tbd": 0,
+            "unknown_priority": 0,
+            "missing_classification": 0,
+            "missing_allocation": 0,
+            "missing_trace": 0,
+        }
+    classification_counts = []
+    allocation_counts = []
+    trace_counts = []
+    missing_classification = 0
+    missing_allocation = 0
+    missing_trace = 0
+    if table_exists(conn, "requirement_classification"):
+        classification_counts = rows(
+            conn,
+            """
+            SELECT classification_type AS type, value, COUNT(*) AS count
+            FROM requirement_classification
+            GROUP BY classification_type, value
+            ORDER BY classification_type, count DESC, value
+            LIMIT 24
+            """,
+        )
+        missing_classification = int(
+            scalar(
+                conn,
+                """
+                SELECT COUNT(*)
+                FROM requirement_item r
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM requirement_classification c WHERE c.requirement_id = r.requirement_id
+                )
+                """,
+            )
+            or 0
+        )
+    if table_exists(conn, "requirement_allocation"):
+        allocation_counts = rows(
+            conn,
+            """
+            SELECT target_layer AS layer, COUNT(*) AS count
+            FROM requirement_allocation
+            GROUP BY target_layer
+            ORDER BY count DESC, target_layer
+            """,
+        )
+        missing_allocation = int(
+            scalar(
+                conn,
+                """
+                SELECT COUNT(*)
+                FROM requirement_item r
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM requirement_allocation a WHERE a.requirement_id = r.requirement_id
+                )
+                """,
+            )
+            or 0
+        )
+    if table_exists(conn, "requirement_trace"):
+        trace_counts = rows(
+            conn,
+            """
+            SELECT relation, target_type AS target, COUNT(*) AS count
+            FROM requirement_trace
+            GROUP BY relation, target_type
+            ORDER BY relation, count DESC, target_type
+            LIMIT 24
+            """,
+        )
+        missing_trace = int(
+            scalar(
+                conn,
+                """
+                SELECT COUNT(*)
+                FROM requirement_item r
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM requirement_trace t WHERE t.requirement_id = r.requirement_id
+                )
+                """,
+            )
+            or 0
+        )
     return {
         "type_counts": rows(
             conn,
@@ -201,6 +296,12 @@ def requirement_summary(conn: sqlite3.Connection) -> dict[str, Any]:
         ),
         "open_tbd": int(scalar(conn, "SELECT COUNT(*) FROM requirement_item WHERE status LIKE '%tbd%'") or 0),
         "unknown_priority": int(scalar(conn, "SELECT COUNT(*) FROM requirement_item WHERE priority = 'unknown'") or 0),
+        "classification_counts": classification_counts,
+        "allocation_counts": allocation_counts,
+        "trace_counts": trace_counts,
+        "missing_classification": missing_classification,
+        "missing_allocation": missing_allocation,
+        "missing_trace": missing_trace,
     }
 
 
@@ -283,6 +384,12 @@ def attention(profile: dict[str, Any], coverage: dict[str, int], conn: sqlite3.C
         items.append(f"{requirements['unknown_priority']} requirement(s) still have unknown priority.")
     if requirements["open_tbd"]:
         items.append(f"{requirements['open_tbd']} requirement(s) still carry TBD/open status.")
+    if requirements.get("missing_classification", 0):
+        items.append(f"{requirements['missing_classification']} requirement(s) lack classification sidecar rows.")
+    if requirements.get("missing_allocation", 0):
+        items.append(f"{requirements['missing_allocation']} requirement(s) lack allocation sidecar rows.")
+    if requirements.get("missing_trace", 0):
+        items.append(f"{requirements['missing_trace']} requirement(s) lack trace sidecar rows.")
     if coverage["missing_routes"]:
         items.append(f"{coverage['missing_routes']} route(s) still lack route-level handoff exports.")
     formal = profile.get("formal_systems", {})
@@ -363,6 +470,24 @@ def render(db_path: Path, handoff_limit: int, generated_at: str) -> str:
     lines.extend(table(requirements["priority_counts"], [("Priority", "priority"), ("Count", "count")]))
     lines.extend(["", "### Nonfunctional Constraint Origins", ""])
     lines.extend(table(requirements["nfr_origin_counts"], [("Origin", "origin"), ("Count", "count")]))
+    lines.extend(["", "### Requirement Classification Coverage", ""])
+    lines.extend(table(requirements["classification_counts"], [("Type", "type"), ("Value", "value"), ("Count", "count")]))
+    lines.extend(["", "### Requirement Allocation Coverage", ""])
+    lines.extend(table(requirements["allocation_counts"], [("Layer", "layer"), ("Count", "count")]))
+    lines.extend(["", "### Requirement Trace Coverage", ""])
+    lines.extend(table(requirements["trace_counts"], [("Relation", "relation"), ("Target", "target"), ("Count", "count")]))
+    lines.extend(
+        [
+            "",
+            "### Requirement Gap Counters",
+            "",
+            "| Gap | Count |",
+            "| --- | ---: |",
+            f"| Missing classification rows | {requirements.get('missing_classification', 0)} |",
+            f"| Missing allocation rows | {requirements.get('missing_allocation', 0)} |",
+            f"| Missing trace rows | {requirements.get('missing_trace', 0)} |",
+        ]
+    )
     lines.extend(["", "## Knowledge Packs", ""])
     lines.extend(table(pack_rows(), [("Pack", "pack"), ("Locked", "locked"), ("DB hash", "db_sha256"), ("Accepted by", "accepted_by"), ("Accepted at", "accepted_at")]))
     lines.extend(["", "## Review State Summary", "", "### Decisions", ""])
@@ -412,7 +537,7 @@ def record_brief(db_path: Path, output: Path, generated_at: str) -> None:
                 "FACT-REVIEW-BRIEF-LATEST",
                 "review_brief",
                 "latest_review_brief",
-                f"{rel_output} compresses project profile, requirements, route coverage, project DB counts, latest handoffs, review attention, and No-X boundaries for human review.",
+                f"{rel_output} compresses project profile, requirements, classification/allocation/trace coverage, route coverage, project DB counts, latest handoffs, review attention, and No-X boundaries for human review.",
                 rel_output,
                 "candidate_ready_for_manual_review",
                 "NO-CANDIDATE-AS-RECORD",

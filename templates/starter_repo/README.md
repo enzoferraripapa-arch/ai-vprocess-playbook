@@ -34,7 +34,9 @@ matrix are reviewed. Functional and nonfunctional requirements must include
 priority and acceptance/verification notes. Nonfunctional requirements must also
 name whether the constraint is architectural, human-factors/ergonomics,
 regulatory, safety, security, operational, manufacturing, evidence-related, or
-mixed:
+mixed. Requirement sidecars capture level, source authority, risk impact,
+applicability, baseline, data freshness, formal target, gate tier, maturity,
+allocation, and candidate traces:
 
 ```bash
 python tools/init_project_db.py
@@ -65,8 +67,8 @@ files are candidate review material, not formal-system imports.
 The generated Review Brief is the preferred first packet for human review; it
 compresses the project DB, route coverage, handoff candidates, knowledge-pack
 lock, requirement summary, priority summary, nonfunctional constraint origins,
-review attention, and No-X boundaries before reviewers open the larger document
-set.
+classification/allocation/trace coverage, review attention, and No-X boundaries
+before reviewers open the larger document set.
 
 ## Local Checks
 
