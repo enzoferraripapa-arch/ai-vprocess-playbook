@@ -22,6 +22,7 @@ The template contains:
 | `AGENTS.md` | Instructions for AI coding agents. |
 | `.aivprocess/project_profile.json` | Product-specific facts and scope. |
 | `.aivprocess/requirements.json` | Product-specific functional/nonfunctional requirement candidates, priority, NFR constraint origin, and sidecar classification/allocation/trace rows. |
+| `.aivprocess/reuse_assessment.json` | Product-specific existing-asset, legacy-record, and delta-development applicability candidates. |
 | `.aivprocess/knowledge_pack_lock.json` | Exact shared knowledge-pack versions used. |
 | `.aivprocess/routing_matrix.json` | Local activity routing candidates. |
 | `docs/no_x_rules.md` | Boundary rules adopted by the project. |
@@ -39,13 +40,14 @@ The template contains:
 2. Fill `.aivprocess/project_profile.json`.
 3. Fill `.aivprocess/requirements.json` with functional requirements, nonfunctional requirements, priority, and whether each NFR is driven by architecture, human factors/ergonomics, regulation, safety, security, operation, manufacturing, evidence, or mixed constraints.
 4. Add requirement sidecars for level, source authority, risk impact, applicability, baseline, data freshness, formal target, gate tier, maturity, allocation owner, and candidate traces to design/risk/test/evidence/handoff targets.
-5. Point `.aivprocess/knowledge_pack_lock.json` at the knowledge packs the
+5. Fill `.aivprocess/reuse_assessment.json` for legacy artifacts, reused components, existing tests, previous approvals, and delta changes that may be mistaken for current evidence.
+6. Point `.aivprocess/knowledge_pack_lock.json` at the knowledge packs the
    project actually uses.
-6. Review `.aivprocess/routing_matrix.json`.
-7. Initialize `.aivprocess/project.db`.
-8. Run one local review and handoff rehearsal.
-9. Generate the Review Brief as the first human-facing packet.
-10. Run the safety gate.
+7. Review `.aivprocess/routing_matrix.json`.
+8. Initialize `.aivprocess/project.db`.
+9. Run one local review and handoff rehearsal.
+10. Generate the Review Brief as the first human-facing packet.
+11. Run the safety gate.
 
 ```bash
 python tools/init_project_db.py
@@ -79,6 +81,8 @@ The starter DB tools are deliberately small:
 
 - `init_project_db.py` records the reviewed profile, lock, routing matrix, and
   requirement/evidence pointers in the project DB.
+- `init_project_db.py` also records existing-asset and delta-development
+  applicability candidates from `.aivprocess/reuse_assessment.json`.
 - `record_local_handoff.py` records an accepted local review and creates a
   handoff candidate with explicit excluded counts.
 - `export_handoff.py` exports only the local candidate package. It does not
@@ -114,6 +118,12 @@ and record ownership.
 - `NO-HANDOFF-AS-IMPORT`: A handoff package is not a formal-system import.
 - `NO-APP-AS-AUTHORITY`: A skill, app, or dashboard is not the knowledge or
   approval authority.
+- `NO-LEGACY-AS-CURRENT`: Existing artifacts are not current project truth.
+- `NO-PAST-PASS-AS-CURRENT-PASS`: A previous pass is not a current pass.
+- `NO-SMALL-DELTA-AS-LOW-RISK`: A small delta is not automatically low risk.
+- `NO-REUSE-AS-TRACE-CLOSURE`: Reuse does not close traceability.
+- `NO-EXISTING-TEST-AS-REVALIDATION`: Existing tests are not current
+  revalidation.
 
 ## Minimum Adoption Review
 
@@ -125,6 +135,8 @@ Before calling a project "set up", check:
   human-factors/ergonomics constraints and other constraint origins;
 - every requirement has sidecar classification, allocation, and trace rows, or
   the Review Brief explicitly shows the missing coverage;
+- existing assets, reused components, previous approvals, and existing tests
+  have reuse/delta disposition and revalidation expectations;
 - knowledge pack lock names exact pack versions and hashes;
 - routing matrix has project-specific triggers, not only template examples;
 - responsibility boundary is accepted by the project owner;

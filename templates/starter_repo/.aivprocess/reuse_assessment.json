@@ -1,0 +1,48 @@
+{
+  "schema": "aivprocess-reuse-assessment/v1",
+  "authority": "Product-local applicability candidates for existing assets, reused components, previous approvals, existing tests, and delta changes.",
+  "items": [
+    {
+      "asset_id": "REUSE-001",
+      "asset_type": "legacy_process_record",
+      "name": "Previous project review result",
+      "source": "Replace with the previous baseline, review record, or release note.",
+      "intended_use": "Historical input for planning only.",
+      "reuse_disposition": "requires_revalidation",
+      "delta_scope": "Unknown until the current project scope and baseline are reviewed.",
+      "assumptions": "The old result may have used different requirements, configuration, environment, or acceptance criteria.",
+      "required_review": "Compare previous criteria with current requirements and record current applicability.",
+      "required_revalidation": "Re-run or justify each affected gate before claiming current pass.",
+      "status": "needs_review",
+      "boundary": "NO-PAST-PASS-AS-CURRENT-PASS"
+    },
+    {
+      "asset_id": "REUSE-002",
+      "asset_type": "existing_design_candidate",
+      "name": "Existing design document",
+      "source": "Replace with the design document path or controlled record id.",
+      "intended_use": "Candidate input for current architecture/design work.",
+      "reuse_disposition": "adapted_delta",
+      "delta_scope": "Interfaces, timing, safety/security impact, and downstream tests must be checked.",
+      "assumptions": "The design may no longer match stakeholder requirements or current constraints.",
+      "required_review": "Run impact review before using it as current design evidence.",
+      "required_revalidation": "Plan regression and trace review for affected requirements and interfaces.",
+      "status": "needs_review",
+      "boundary": "NO-LEGACY-AS-CURRENT"
+    },
+    {
+      "asset_id": "REUSE-003",
+      "asset_type": "existing_test_or_validation",
+      "name": "Existing test evidence",
+      "source": "Replace with the test report, CI run, validation record, or lab notebook path.",
+      "intended_use": "Reference for current verification planning.",
+      "reuse_disposition": "requires_revalidation",
+      "delta_scope": "Configuration, environment, acceptance criteria, and observed behavior must match the current project.",
+      "assumptions": "An old passing test may not cover current requirements, configuration, or risk.",
+      "required_review": "Confirm whether the old test can be reused, rerun, or only cited as history.",
+      "required_revalidation": "Record the rerun result or the reviewed justification for not rerunning.",
+      "status": "needs_review",
+      "boundary": "NO-EXISTING-TEST-AS-REVALIDATION"
+    }
+  ]
+}

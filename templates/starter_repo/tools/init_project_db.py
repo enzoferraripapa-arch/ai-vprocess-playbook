@@ -14,6 +14,7 @@ PROFILE = ROOT / ".aivprocess" / "project_profile.json"
 LOCK = ROOT / ".aivprocess" / "knowledge_pack_lock.json"
 ROUTING = ROOT / ".aivprocess" / "routing_matrix.json"
 REQUIREMENTS = ROOT / ".aivprocess" / "requirements.json"
+REUSE = ROOT / ".aivprocess" / "reuse_assessment.json"
 
 
 def utc_now() -> str:
@@ -185,6 +186,32 @@ def create_schema(conn: sqlite3.Connection) -> None:
             boundary TEXT NOT NULL CHECK (boundary LIKE 'NO-%' OR boundary LIKE 'MFG-NO-%' OR boundary LIKE 'SEC-NO-%'),
             PRIMARY KEY (requirement_id, target_type, target_id, relation),
             FOREIGN KEY (requirement_id) REFERENCES requirement_item(requirement_id) ON DELETE CASCADE
+        );
+
+        CREATE TABLE reuse_assessment (
+            asset_id TEXT PRIMARY KEY,
+            asset_type TEXT NOT NULL,
+            name TEXT NOT NULL,
+            source TEXT NOT NULL,
+            intended_use TEXT NOT NULL,
+            reuse_disposition TEXT NOT NULL CHECK (
+                reuse_disposition IN (
+                    'reuse_as_is',
+                    'reuse_with_assumption',
+                    'adapted_delta',
+                    'reference_only',
+                    'obsolete_or_unknown',
+                    'requires_revalidation'
+                )
+            ),
+            delta_scope TEXT NOT NULL,
+            assumptions TEXT NOT NULL,
+            required_review TEXT NOT NULL,
+            required_revalidation TEXT NOT NULL,
+            status TEXT NOT NULL CHECK (
+                status IN ('candidate_ready_for_manual_review','needs_review','blocked','accepted_local','rejected','planned','open')
+            ),
+            boundary TEXT NOT NULL CHECK (boundary LIKE 'NO-%' OR boundary LIKE 'MFG-NO-%' OR boundary LIKE 'SEC-NO-%')
         );
 
         CREATE TABLE knowledge_pack_adoption (
@@ -446,6 +473,46 @@ def seed_requirements(conn: sqlite3.Connection, requirements: dict[str, Any]) ->
     )
 
 
+def seed_reuse_assessment(conn: sqlite3.Connection, reuse: dict[str, Any]) -> None:
+    rows = []
+    seen: set[str] = set()
+    required = [
+        "asset_id",
+        "asset_type",
+        "name",
+        "source",
+        "intended_use",
+        "reuse_disposition",
+        "delta_scope",
+        "assumptions",
+        "required_review",
+        "required_revalidation",
+        "status",
+        "boundary",
+    ]
+    for index, item in enumerate(reuse.get("items", []), 1):
+        if not isinstance(item, dict):
+            raise ValueError(f"reuse item #{index} is not an object")
+        missing = [field for field in required if not str(item.get(field, "")).strip()]
+        if missing:
+            raise ValueError(f"reuse item #{index} missing fields: {', '.join(missing)}")
+        asset_id = str(item["asset_id"])
+        if asset_id in seen:
+            raise ValueError(f"duplicate reuse asset_id: {asset_id}")
+        seen.add(asset_id)
+        rows.append(tuple(str(item[field]) for field in required))
+    conn.executemany(
+        """
+        INSERT INTO reuse_assessment(
+            asset_id, asset_type, name, source, intended_use, reuse_disposition,
+            delta_scope, assumptions, required_review, required_revalidation,
+            status, boundary
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        rows,
+    )
+
+
 def seed_knowledge_lock(conn: sqlite3.Connection, lock: dict[str, Any]) -> None:
     rows = []
     for item in lock.get("knowledge_packs", []):
@@ -476,6 +543,7 @@ def initialize(db_path: Path) -> None:
     lock = read_json(LOCK)
     routing = read_json(ROUTING)
     requirements = read_json(REQUIREMENTS)
+    reuse = read_json(REUSE)
     created_at = utc_now()
     with connect_new(db_path) as conn:
         create_schema(conn)
@@ -483,6 +551,7 @@ def initialize(db_path: Path) -> None:
         seed_project_facts(conn, profile, routing)
         seed_evidence(conn)
         seed_requirements(conn, requirements)
+        seed_reuse_assessment(conn, reuse)
         seed_knowledge_lock(conn, lock)
         conn.commit()
 

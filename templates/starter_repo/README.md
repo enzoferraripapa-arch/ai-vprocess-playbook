@@ -19,13 +19,14 @@ approvals.
 1. `AGENTS.md`
 2. `.aivprocess/project_profile.json`
 3. `.aivprocess/requirements.json`
-4. `.aivprocess/knowledge_pack_lock.json`
-5. `.aivprocess/routing_matrix.json`
-6. `.aivprocess/project.db` after it exists
-7. `docs/review_brief_YYYYMMDD.md` after it exists
-8. `docs/no_x_rules.md`
-9. `docs/responsibility_boundary.md`
-10. `docs/handoff_template.md`
+4. `.aivprocess/reuse_assessment.json`
+5. `.aivprocess/knowledge_pack_lock.json`
+6. `.aivprocess/routing_matrix.json`
+7. `.aivprocess/project.db` after it exists
+8. `docs/review_brief_YYYYMMDD.md` after it exists
+9. `docs/no_x_rules.md`
+10. `docs/responsibility_boundary.md`
+11. `docs/handoff_template.md`
 
 ## Local Project DB
 
@@ -69,6 +70,8 @@ compresses the project DB, route coverage, handoff candidates, knowledge-pack
 lock, requirement summary, priority summary, nonfunctional constraint origins,
 classification/allocation/trace coverage, review attention, and No-X boundaries
 before reviewers open the larger document set.
+It also surfaces reuse and delta-development items so previous artifacts,
+passes, components, or tests are not silently treated as current evidence.
 
 ## Local Checks
 

@@ -89,6 +89,7 @@ def db_counts(conn: sqlite3.Connection) -> list[dict[str, Any]]:
         "requirement_classification",
         "requirement_allocation",
         "requirement_trace",
+        "reuse_assessment",
         "route_event",
         "candidate_decision",
         "review_state",
@@ -153,6 +154,7 @@ def boundary_counts(conn: sqlite3.Connection) -> list[dict[str, Any]]:
         "SELECT boundary FROM requirement_classification",
         "SELECT boundary FROM requirement_allocation",
         "SELECT boundary FROM requirement_trace",
+        "SELECT boundary FROM reuse_assessment",
         "SELECT boundary FROM route_event",
         "SELECT boundary FROM candidate_decision",
         "SELECT boundary FROM review_state",
@@ -305,6 +307,70 @@ def requirement_summary(conn: sqlite3.Connection) -> dict[str, Any]:
     }
 
 
+def reuse_summary(conn: sqlite3.Connection) -> dict[str, Any]:
+    if not table_exists(conn, "reuse_assessment"):
+        return {
+            "disposition_counts": [],
+            "status_counts": [],
+            "action_needed": 0,
+            "review_items": [],
+        }
+    action_needed = int(
+        scalar(
+            conn,
+            """
+            SELECT COUNT(*)
+            FROM reuse_assessment
+            WHERE status != 'accepted_local'
+               OR reuse_disposition IN (
+                   'requires_revalidation',
+                   'adapted_delta',
+                   'reuse_with_assumption',
+                   'obsolete_or_unknown'
+               )
+            """,
+        )
+        or 0
+    )
+    return {
+        "disposition_counts": rows(
+            conn,
+            """
+            SELECT reuse_disposition AS disposition, COUNT(*) AS count
+            FROM reuse_assessment
+            GROUP BY reuse_disposition
+            ORDER BY count DESC, reuse_disposition
+            """,
+        ),
+        "status_counts": rows(
+            conn,
+            """
+            SELECT status, COUNT(*) AS count
+            FROM reuse_assessment
+            GROUP BY status
+            ORDER BY count DESC, status
+            """,
+        ),
+        "action_needed": action_needed,
+        "review_items": rows(
+            conn,
+            """
+            SELECT asset_id, asset_type, name, reuse_disposition AS disposition, status, boundary
+            FROM reuse_assessment
+            WHERE status != 'accepted_local'
+               OR reuse_disposition IN (
+                   'requires_revalidation',
+                   'adapted_delta',
+                   'reuse_with_assumption',
+                   'obsolete_or_unknown'
+               )
+            ORDER BY asset_id
+            LIMIT 12
+            """,
+        ),
+    }
+
+
 def project_profile() -> dict[str, Any]:
     profile = read_json(ROOT / ".aivprocess" / "project_profile.json")
     common = profile.get("common", {})
@@ -392,6 +458,9 @@ def attention(profile: dict[str, Any], coverage: dict[str, int], conn: sqlite3.C
         items.append(f"{requirements['missing_trace']} requirement(s) lack trace sidecar rows.")
     if coverage["missing_routes"]:
         items.append(f"{coverage['missing_routes']} route(s) still lack route-level handoff exports.")
+    reuse = reuse_summary(conn)
+    if reuse["action_needed"]:
+        items.append(f"{reuse['action_needed']} reused/delta asset(s) still need applicability review or revalidation.")
     formal = profile.get("formal_systems", {})
     if isinstance(formal, dict):
         connector = str(formal.get("connector", formal.get("connector_mode", "")))
@@ -414,6 +483,7 @@ def render(db_path: Path, handoff_limit: int, generated_at: str) -> str:
         coverage = route_coverage(conn)
         count_rows = db_counts(conn)
         requirements = requirement_summary(conn)
+        reuse = reuse_summary(conn)
         decisions = status_counts(conn, "candidate_decision")
         reviews = status_counts(conn, "review_state")
         handoff_status = status_counts(conn, "handoff_candidate")
@@ -488,6 +558,12 @@ def render(db_path: Path, handoff_limit: int, generated_at: str) -> str:
             f"| Missing trace rows | {requirements.get('missing_trace', 0)} |",
         ]
     )
+    lines.extend(["", "## Reuse And Delta Summary", "", "### Reuse Disposition", ""])
+    lines.extend(table(reuse["disposition_counts"], [("Disposition", "disposition"), ("Count", "count")]))
+    lines.extend(["", "### Reuse Review Status", ""])
+    lines.extend(table(reuse["status_counts"], [("Status", "status"), ("Count", "count")]))
+    lines.extend(["", "### Reuse Items Needing Review", ""])
+    lines.extend(table(reuse["review_items"], [("Asset", "asset_id"), ("Type", "asset_type"), ("Name", "name"), ("Disposition", "disposition"), ("Status", "status"), ("Boundary", "boundary")]))
     lines.extend(["", "## Knowledge Packs", ""])
     lines.extend(table(pack_rows(), [("Pack", "pack"), ("Locked", "locked"), ("DB hash", "db_sha256"), ("Accepted by", "accepted_by"), ("Accepted at", "accepted_at")]))
     lines.extend(["", "## Review State Summary", "", "### Decisions", ""])
@@ -517,6 +593,11 @@ def render(db_path: Path, handoff_limit: int, generated_at: str) -> str:
             "- `NO-HANDOFF-AS-IMPORT`: handoff packages are not import completion.",
             "- `NO-LOCAL-ACCEPTED-AS-FORMAL-APPROVAL`: local acceptance is not formal approval.",
             "- `NO-CEREMONY-AS-ENGINEERING`: completing the brief does not prove engineering soundness.",
+            "- `NO-LEGACY-AS-CURRENT`: legacy artifacts are not current project truth.",
+            "- `NO-PAST-PASS-AS-CURRENT-PASS`: prior pass evidence is not a current pass.",
+            "- `NO-SMALL-DELTA-AS-LOW-RISK`: small-looking deltas are not automatically low risk.",
+            "- `NO-REUSE-AS-TRACE-CLOSURE`: reuse does not close traceability.",
+            "- `NO-EXISTING-TEST-AS-REVALIDATION`: existing tests are not current revalidation.",
             "",
         ]
     )
@@ -537,7 +618,7 @@ def record_brief(db_path: Path, output: Path, generated_at: str) -> None:
                 "FACT-REVIEW-BRIEF-LATEST",
                 "review_brief",
                 "latest_review_brief",
-                f"{rel_output} compresses project profile, requirements, classification/allocation/trace coverage, route coverage, project DB counts, latest handoffs, review attention, and No-X boundaries for human review.",
+                f"{rel_output} compresses project profile, requirements, reuse/delta assessment, classification/allocation/trace coverage, route coverage, project DB counts, latest handoffs, review attention, and No-X boundaries for human review.",
                 rel_output,
                 "candidate_ready_for_manual_review",
                 "NO-CANDIDATE-AS-RECORD",

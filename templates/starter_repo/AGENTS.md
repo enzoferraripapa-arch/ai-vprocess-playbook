@@ -7,13 +7,14 @@ This repository uses the AI V-process starter layout.
 1. `README.md`
 2. `.aivprocess/project_profile.json`
 3. `.aivprocess/requirements.json`
-4. `.aivprocess/knowledge_pack_lock.json`
-5. `.aivprocess/routing_matrix.json`
-6. `.aivprocess/project.db` if it exists
-7. `docs/review_brief_YYYYMMDD.md` if it exists
-8. `docs/no_x_rules.md`
-9. `docs/responsibility_boundary.md`
-10. `docs/handoff_template.md`
+4. `.aivprocess/reuse_assessment.json`
+5. `.aivprocess/knowledge_pack_lock.json`
+6. `.aivprocess/routing_matrix.json`
+7. `.aivprocess/project.db` if it exists
+8. `docs/review_brief_YYYYMMDD.md` if it exists
+9. `docs/no_x_rules.md`
+10. `docs/responsibility_boundary.md`
+11. `docs/handoff_template.md`
 
 ## Rules
 
@@ -25,6 +26,9 @@ This repository uses the AI V-process starter layout.
 - Use requirement sidecars for level/source/risk/applicability/baseline/freshness
   classification, layer/component/owner allocation, and candidate traces to
   design/risk/test/evidence/handoff targets.
+- Keep legacy artifacts, reused components, previous approvals, existing tests,
+  and delta changes in `.aivprocess/reuse_assessment.json` until applicability
+  review and revalidation expectations are explicit.
 - Keep reusable knowledge in external knowledge packs.
 - Do not paste private standards text, customer material, credentials, local
   hostnames, or private source paths into public artifacts.

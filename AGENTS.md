@@ -43,6 +43,9 @@ Formal systems keep official records and approvals.
   names, credentials, customer names, or internal operating logs.
 - Keep work-item-like records, gates, traces, connector permissions, and
   routing outputs as candidates until reviewed.
+- Keep existing assets, previous approvals, reused components, existing tests,
+  and small deltas in reuse/delta applicability review until current-project
+  applicability and revalidation are explicit.
 - Keep product-specific project DBs separate from shared knowledge-pack DBs.
 - Do not treat a skill, app, connector, or dashboard as the knowledge authority.
 - When adding starter templates, keep them fictional and generic enough to copy

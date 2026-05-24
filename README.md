@@ -72,6 +72,7 @@ flowchart LR
 - [examples/sample_routing.json](examples/sample_routing.json)
 - [examples/starter_project/.aivprocess/knowledge_pack_lock.json](examples/starter_project/.aivprocess/knowledge_pack_lock.json)
 - [templates/starter_repo/.aivprocess/requirements.json](templates/starter_repo/.aivprocess/requirements.json)
+- [templates/starter_repo/.aivprocess/reuse_assessment.json](templates/starter_repo/.aivprocess/reuse_assessment.json)
 - [examples/knowledge_packs/](examples/knowledge_packs/)
 - [templates/starter_repo/](templates/starter_repo/)
 - [examples/scenarios/01_firmware_update_walkthrough.md](examples/scenarios/01_firmware_update_walkthrough.md)

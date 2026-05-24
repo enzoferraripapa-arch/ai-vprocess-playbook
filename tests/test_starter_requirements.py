@@ -46,6 +46,10 @@ class StarterRequirementTests(unittest.TestCase):
                     9,
                 )
                 self.assertEqual(
+                    conn.execute("SELECT COUNT(*) FROM reuse_assessment").fetchone()[0],
+                    3,
+                )
+                self.assertEqual(
                     conn.execute(
                         """
                         SELECT COUNT(*)
@@ -67,6 +71,8 @@ class StarterRequirementTests(unittest.TestCase):
             self.assertIn("### Requirement Allocation Coverage", text)
             self.assertIn("### Requirement Trace Coverage", text)
             self.assertIn("### Requirement Gap Counters", text)
+            self.assertIn("## Reuse And Delta Summary", text)
+            self.assertIn("NO-EXISTING-TEST-AS-REVALIDATION", text)
 
 
 if __name__ == "__main__":
