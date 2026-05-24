@@ -13,6 +13,7 @@ DEFAULT_DB = ROOT / ".aivprocess" / "project.db"
 PROFILE = ROOT / ".aivprocess" / "project_profile.json"
 LOCK = ROOT / ".aivprocess" / "knowledge_pack_lock.json"
 ROUTING = ROOT / ".aivprocess" / "routing_matrix.json"
+REQUIREMENTS = ROOT / ".aivprocess" / "requirements.json"
 
 
 def utc_now() -> str:
@@ -70,6 +71,45 @@ def create_schema(conn: sqlite3.Connection) -> None:
                 OR status LIKE 'candidate_ready_for_manual_review_%'
             ),
             boundary TEXT NOT NULL CHECK (boundary LIKE 'NO-%' OR boundary LIKE 'MFG-NO-%' OR boundary LIKE 'SEC-NO-%')
+        );
+
+        CREATE TABLE requirement_item (
+            requirement_id TEXT PRIMARY KEY,
+            title TEXT NOT NULL,
+            requirement_type TEXT NOT NULL CHECK (
+                requirement_type IN ('functional','nonfunctional','interface','safety','security','regulatory','manufacturing','process')
+            ),
+            priority TEXT NOT NULL CHECK (priority IN ('P0','P1','P2','P3','deferred','unknown')),
+            constraint_origin TEXT NOT NULL CHECK (
+                constraint_origin IN (
+                    'not_applicable',
+                    'architecture_constraint',
+                    'human_factors_constraint',
+                    'regulatory_constraint',
+                    'safety_constraint',
+                    'security_constraint',
+                    'operational_constraint',
+                    'manufacturing_constraint',
+                    'evidence_constraint',
+                    'mixed_constraint',
+                    'not_classified'
+                )
+            ),
+            source TEXT NOT NULL,
+            statement TEXT NOT NULL,
+            acceptance_criteria TEXT NOT NULL,
+            verification_method TEXT NOT NULL,
+            status TEXT NOT NULL CHECK (
+                status IN ('accepted_local','candidate_only','candidate_ready_for_manual_review','gate_not_passed','open','open_not_passed','open_tbd','planned','recorded','rejected_as_authority','resolved_local')
+                OR status LIKE 'available_%'
+                OR status LIKE 'accepted_local_%'
+                OR status LIKE 'candidate_ready_for_manual_review_%'
+            ),
+            boundary TEXT NOT NULL CHECK (boundary LIKE 'NO-%' OR boundary LIKE 'MFG-NO-%' OR boundary LIKE 'SEC-NO-%'),
+            CHECK (
+                requirement_type != 'nonfunctional'
+                OR constraint_origin NOT IN ('not_applicable','not_classified')
+            )
         );
 
         CREATE TABLE knowledge_pack_adoption (
@@ -240,6 +280,35 @@ def seed_evidence(conn: sqlite3.Connection) -> None:
     )
 
 
+def seed_requirements(conn: sqlite3.Connection, requirements: dict[str, Any]) -> None:
+    rows = []
+    for item in requirements.get("requirements", []):
+        rows.append(
+            (
+                str(item.get("requirement_id", "")),
+                str(item.get("title", "")),
+                str(item.get("requirement_type", "")),
+                str(item.get("priority", "")),
+                str(item.get("constraint_origin", "")),
+                str(item.get("source", "")),
+                str(item.get("statement", "")),
+                str(item.get("acceptance_criteria", "")),
+                str(item.get("verification_method", "")),
+                str(item.get("status", "candidate_ready_for_manual_review")),
+                str(item.get("boundary", "NO-CANDIDATE-AS-RECORD")),
+            )
+        )
+    conn.executemany(
+        """
+        INSERT INTO requirement_item(
+            requirement_id, title, requirement_type, priority, constraint_origin, source,
+            statement, acceptance_criteria, verification_method, status, boundary
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        rows,
+    )
+
+
 def seed_knowledge_lock(conn: sqlite3.Connection, lock: dict[str, Any]) -> None:
     rows = []
     for item in lock.get("knowledge_packs", []):
@@ -269,12 +338,14 @@ def initialize(db_path: Path) -> None:
     profile = read_json(PROFILE)
     lock = read_json(LOCK)
     routing = read_json(ROUTING)
+    requirements = read_json(REQUIREMENTS)
     created_at = utc_now()
     with connect_new(db_path) as conn:
         create_schema(conn)
         seed_metadata(conn, profile, created_at)
         seed_project_facts(conn, profile, routing)
         seed_evidence(conn)
+        seed_requirements(conn, requirements)
         seed_knowledge_lock(conn, lock)
         conn.commit()
 

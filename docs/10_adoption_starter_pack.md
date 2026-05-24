@@ -21,6 +21,7 @@ The template contains:
 | `README.md` | Local project entry point. |
 | `AGENTS.md` | Instructions for AI coding agents. |
 | `.aivprocess/project_profile.json` | Product-specific facts and scope. |
+| `.aivprocess/requirements.json` | Product-specific functional/nonfunctional requirement candidates, priority, and NFR constraint origin. |
 | `.aivprocess/knowledge_pack_lock.json` | Exact shared knowledge-pack versions used. |
 | `.aivprocess/routing_matrix.json` | Local activity routing candidates. |
 | `docs/no_x_rules.md` | Boundary rules adopted by the project. |
@@ -36,13 +37,14 @@ The template contains:
 
 1. Replace fictional product text in `README.md`.
 2. Fill `.aivprocess/project_profile.json`.
-3. Point `.aivprocess/knowledge_pack_lock.json` at the knowledge packs the
+3. Fill `.aivprocess/requirements.json` with functional requirements, nonfunctional requirements, priority, and whether each NFR is driven by architecture, human factors/ergonomics, regulation, safety, security, operation, manufacturing, evidence, or mixed constraints.
+4. Point `.aivprocess/knowledge_pack_lock.json` at the knowledge packs the
    project actually uses.
-4. Review `.aivprocess/routing_matrix.json`.
-5. Initialize `.aivprocess/project.db`.
-6. Run one local review and handoff rehearsal.
-7. Generate the Review Brief as the first human-facing packet.
-8. Run the safety gate.
+5. Review `.aivprocess/routing_matrix.json`.
+6. Initialize `.aivprocess/project.db`.
+7. Run one local review and handoff rehearsal.
+8. Generate the Review Brief as the first human-facing packet.
+9. Run the safety gate.
 
 ```bash
 python tools/init_project_db.py
@@ -75,7 +77,7 @@ own and disclose that material.
 The starter DB tools are deliberately small:
 
 - `init_project_db.py` records the reviewed profile, lock, routing matrix, and
-  evidence pointers in the project DB.
+  requirement/evidence pointers in the project DB.
 - `record_local_handoff.py` records an accepted local review and creates a
   handoff candidate with explicit excluded counts.
 - `export_handoff.py` exports only the local candidate package. It does not
@@ -117,6 +119,9 @@ and record ownership.
 Before calling a project "set up", check:
 
 - product profile has real owner, domain, lifecycle stage, and risk notes;
+- functional and nonfunctional requirements have priority and acceptance criteria;
+- nonfunctional requirements distinguish architecture-driven constraints from
+  human-factors/ergonomics constraints and other constraint origins;
 - knowledge pack lock names exact pack versions and hashes;
 - routing matrix has project-specific triggers, not only template examples;
 - responsibility boundary is accepted by the project owner;

@@ -74,17 +74,28 @@ def scalar(conn: sqlite3.Connection, query: str, params: tuple[Any, ...] = ()) -
     return row[0] if row else None
 
 
+def table_exists(conn: sqlite3.Connection, table_name: str) -> bool:
+    return conn.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='table' AND name=?",
+        (table_name,),
+    ).fetchone() is not None
+
+
 def db_counts(conn: sqlite3.Connection) -> list[dict[str, Any]]:
     tables = [
         "project_fact",
         "evidence",
+        "requirement_item",
         "route_event",
         "candidate_decision",
         "review_state",
         "handoff_candidate",
     ]
     return [
-        {"table": table_name, "count": int(scalar(conn, f"SELECT COUNT(*) FROM {table_name}") or 0)}
+        {
+            "table": table_name,
+            "count": int(scalar(conn, f"SELECT COUNT(*) FROM {table_name}") or 0) if table_exists(conn, table_name) else 0,
+        }
         for table_name in tables
     ]
 
@@ -135,12 +146,14 @@ def boundary_counts(conn: sqlite3.Connection) -> list[dict[str, Any]]:
     sources = [
         "SELECT boundary FROM project_fact",
         "SELECT boundary FROM evidence",
+        "SELECT boundary FROM requirement_item",
         "SELECT boundary FROM route_event",
         "SELECT boundary FROM candidate_decision",
         "SELECT boundary FROM review_state",
         "SELECT boundary FROM handoff_candidate",
         "SELECT boundary FROM knowledge_pack_adoption",
     ]
+    sources = [source for source in sources if table_exists(conn, source.split(" FROM ", 1)[1])]
     return rows(
         conn,
         f"""
@@ -152,6 +165,43 @@ def boundary_counts(conn: sqlite3.Connection) -> list[dict[str, Any]]:
         LIMIT 10
         """,
     )
+
+
+def requirement_summary(conn: sqlite3.Connection) -> dict[str, Any]:
+    if not table_exists(conn, "requirement_item"):
+        return {"type_counts": [], "priority_counts": [], "nfr_origin_counts": [], "open_tbd": 0, "unknown_priority": 0}
+    return {
+        "type_counts": rows(
+            conn,
+            """
+            SELECT requirement_type AS type, COUNT(*) AS count
+            FROM requirement_item
+            GROUP BY requirement_type
+            ORDER BY count DESC, requirement_type
+            """,
+        ),
+        "priority_counts": rows(
+            conn,
+            """
+            SELECT priority, COUNT(*) AS count
+            FROM requirement_item
+            GROUP BY priority
+            ORDER BY priority
+            """,
+        ),
+        "nfr_origin_counts": rows(
+            conn,
+            """
+            SELECT constraint_origin AS origin, COUNT(*) AS count
+            FROM requirement_item
+            WHERE requirement_type = 'nonfunctional'
+            GROUP BY constraint_origin
+            ORDER BY count DESC, constraint_origin
+            """,
+        ),
+        "open_tbd": int(scalar(conn, "SELECT COUNT(*) FROM requirement_item WHERE status LIKE '%tbd%'") or 0),
+        "unknown_priority": int(scalar(conn, "SELECT COUNT(*) FROM requirement_item WHERE priority = 'unknown'") or 0),
+    }
 
 
 def project_profile() -> dict[str, Any]:
@@ -225,6 +275,14 @@ def pack_rows() -> list[dict[str, Any]]:
 
 def attention(profile: dict[str, Any], coverage: dict[str, int], conn: sqlite3.Connection) -> list[str]:
     items: list[str] = []
+    requirements = requirement_summary(conn)
+    requirement_count = sum(int(row["count"]) for row in requirements["type_counts"])
+    if requirement_count == 0:
+        items.append("No functional/nonfunctional requirement inventory is recorded in project.db.")
+    if requirements["unknown_priority"]:
+        items.append(f"{requirements['unknown_priority']} requirement(s) still have unknown priority.")
+    if requirements["open_tbd"]:
+        items.append(f"{requirements['open_tbd']} requirement(s) still carry TBD/open status.")
     if coverage["missing_routes"]:
         items.append(f"{coverage['missing_routes']} route(s) still lack route-level handoff exports.")
     formal = profile.get("formal_systems", {})
@@ -248,6 +306,7 @@ def render(db_path: Path, handoff_limit: int, generated_at: str) -> str:
     with connect_readonly(db_path) as conn:
         coverage = route_coverage(conn)
         count_rows = db_counts(conn)
+        requirements = requirement_summary(conn)
         decisions = status_counts(conn, "candidate_decision")
         reviews = status_counts(conn, "review_state")
         handoff_status = status_counts(conn, "handoff_candidate")
@@ -298,6 +357,12 @@ def render(db_path: Path, handoff_limit: int, generated_at: str) -> str:
         ]
     )
     lines.extend(table(count_rows, [("Table", "table"), ("Rows", "count")]))
+    lines.extend(["", "## Requirement Summary", ""])
+    lines.extend(table(requirements["type_counts"], [("Type", "type"), ("Count", "count")]))
+    lines.extend(["", "### Requirement Priority", ""])
+    lines.extend(table(requirements["priority_counts"], [("Priority", "priority"), ("Count", "count")]))
+    lines.extend(["", "### Nonfunctional Constraint Origins", ""])
+    lines.extend(table(requirements["nfr_origin_counts"], [("Origin", "origin"), ("Count", "count")]))
     lines.extend(["", "## Knowledge Packs", ""])
     lines.extend(table(pack_rows(), [("Pack", "pack"), ("Locked", "locked"), ("DB hash", "db_sha256"), ("Accepted by", "accepted_by"), ("Accepted at", "accepted_at")]))
     lines.extend(["", "## Review State Summary", "", "### Decisions", ""])
@@ -347,7 +412,7 @@ def record_brief(db_path: Path, output: Path, generated_at: str) -> None:
                 "FACT-REVIEW-BRIEF-LATEST",
                 "review_brief",
                 "latest_review_brief",
-                f"{rel_output} compresses project profile, route coverage, project DB counts, latest handoffs, review attention, and No-X boundaries for human review.",
+                f"{rel_output} compresses project profile, requirements, route coverage, project DB counts, latest handoffs, review attention, and No-X boundaries for human review.",
                 rel_output,
                 "candidate_ready_for_manual_review",
                 "NO-CANDIDATE-AS-RECORD",
