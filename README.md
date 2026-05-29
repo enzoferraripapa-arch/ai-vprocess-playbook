@@ -91,6 +91,7 @@ to a private `knowledge-packs/` directory containing actual `knowledge.db` files
 
 ```bash
 python tools/knowledge_pack.py plan --project examples/starter_project --packs examples/knowledge_packs
+python tools/knowledge_pack.py stage --project examples/starter_project --packs examples/knowledge_packs --pack-id process-method
 ```
 
 Create a starter layout for a new product repository:

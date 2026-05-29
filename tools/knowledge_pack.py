@@ -100,7 +100,27 @@ def lock_hash_matches(locked_item: dict[str, Any], record: dict[str, Any]) -> bo
     return locked_manifest == record["manifest_sha256"] and locked_db == record["db_sha256"]
 
 
-def build_plan(project: Path, packs: Path) -> dict[str, Any]:
+def normalize_pack_ids(pack_ids: list[str] | set[str] | tuple[str, ...] | None) -> set[str]:
+    return {str(pack_id).strip() for pack_id in (pack_ids or []) if str(pack_id).strip()}
+
+
+def filter_plan(plan: dict[str, Any], pack_ids: list[str] | set[str] | tuple[str, ...] | None) -> dict[str, Any]:
+    selected = normalize_pack_ids(pack_ids)
+    if not selected:
+        return plan
+
+    filtered = dict(plan)
+    seen: set[str] = set()
+    for key in ("updates", "unchanged", "missing", "invalid", "available_new"):
+        scoped_rows = [item for item in plan.get(key, []) if str(item.get("pack_id", "")) in selected]
+        seen.update(str(item.get("pack_id", "")) for item in scoped_rows)
+        filtered[key] = scoped_rows
+    filtered["selected_pack_ids"] = sorted(selected)
+    filtered["selected_pack_ids_not_found"] = sorted(selected - seen)
+    return filtered
+
+
+def build_plan(project: Path, packs: Path, pack_ids: list[str] | set[str] | tuple[str, ...] | None = None) -> dict[str, Any]:
     lock = load_lock(project)
     manifests = load_manifests(packs)
     locked = {item["pack_id"]: item for item in lock.get("knowledge_packs", [])}
@@ -162,7 +182,7 @@ def build_plan(project: Path, packs: Path) -> dict[str, Any]:
             if record["validation_status"] != "valid":
                 record["status"] = "available_invalid"
 
-    return {
+    plan = {
         "project": str(project),
         "packs": str(packs),
         "lock_path": str(project / LOCK_RELATIVE_PATH),
@@ -178,6 +198,7 @@ def build_plan(project: Path, packs: Path) -> dict[str, Any]:
             "NO-KNOWLEDGE-PACK-AS-SOURCE-LICENSE",
         ],
     }
+    return filter_plan(plan, pack_ids)
 
 
 def print_check(plan: dict[str, Any]) -> None:
@@ -206,14 +227,23 @@ def stage_plan(project: Path, plan: dict[str, Any]) -> Path:
     return stage_dir
 
 
-def accept_plan(project: Path, staged: Path, accepted_by: str, rationale: str) -> None:
+def accept_plan(
+    project: Path,
+    staged: Path,
+    accepted_by: str,
+    rationale: str,
+    accept_available_new: bool = False,
+) -> None:
     plan_path = staged / "knowledge_pack_update_plan.json"
     plan = read_json(plan_path)
     lock = load_lock(project)
     locked = {item["pack_id"]: item for item in lock.get("knowledge_packs", [])}
     accepted_at = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat()
+    selected_pack_ids = normalize_pack_ids(plan.get("selected_pack_ids"))
 
     for update in plan.get("updates", []):
+        if selected_pack_ids and str(update.get("pack_id", "")) not in selected_pack_ids:
+            continue
         if update.get("validation_status") != "valid":
             raise ValueError(f"cannot accept invalid knowledge pack: {update['pack_id']}")
         item = locked[update["pack_id"]]
@@ -225,6 +255,9 @@ def accept_plan(project: Path, staged: Path, accepted_by: str, rationale: str) -
         item["rationale"] = rationale
 
     for new_item in plan.get("available_new", []):
+        selected_new_pack = str(new_item.get("pack_id", "")) in selected_pack_ids
+        if not selected_new_pack and not accept_available_new:
+            continue
         if new_item.get("status") == "available_invalid":
             continue
         if new_item.get("validation_status") != "valid":
@@ -310,17 +343,28 @@ def main() -> int:
         sub = subparsers.add_parser(command)
         sub.add_argument("--project", type=Path, required=True)
         sub.add_argument("--packs", type=Path, required=True)
+        sub.add_argument(
+            "--pack-id",
+            action="append",
+            default=[],
+            help="Limit the plan to one pack. Repeat for multiple packs.",
+        )
 
     accept = subparsers.add_parser("accept")
     accept.add_argument("--project", type=Path, required=True)
     accept.add_argument("--staged", type=Path, required=True)
     accept.add_argument("--accepted-by", required=True)
     accept.add_argument("--rationale", required=True)
+    accept.add_argument(
+        "--accept-new",
+        action="store_true",
+        help="Accept every valid available_not_locked pack in an unscoped staged plan.",
+    )
 
     args = parser.parse_args()
 
     if args.command in {"check", "plan", "stage"}:
-        plan = build_plan(args.project, args.packs)
+        plan = build_plan(args.project, args.packs, args.pack_id)
         if args.command == "check":
             print_check(plan)
             if plan["missing"] or plan["invalid"]:
@@ -333,7 +377,7 @@ def main() -> int:
         return 0
 
     if args.command == "accept":
-        accept_plan(args.project, args.staged, args.accepted_by, args.rationale)
+        accept_plan(args.project, args.staged, args.accepted_by, args.rationale, accept_available_new=args.accept_new)
         print(f"updated {args.project / LOCK_RELATIVE_PATH}")
         return 0
 

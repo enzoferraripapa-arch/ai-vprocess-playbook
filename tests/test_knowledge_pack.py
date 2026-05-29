@@ -10,7 +10,7 @@ from tools import knowledge_pack
 
 
 class KnowledgePackAcceptTests(unittest.TestCase):
-    def test_accept_updates_lock_and_project_db_adoption(self) -> None:
+    def test_accept_updates_lock_and_skips_unselected_new_pack(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
             project = root / "product"
@@ -57,7 +57,7 @@ class KnowledgePackAcceptTests(unittest.TestCase):
                 (item["pack_id"], item["version"], item["manifest_sha256"], item["accepted_by"])
                 for item in lock["knowledge_packs"]
             ]
-            self.assertEqual([row[0] for row in locked_rows], ["process-method", "security-privacy"])
+            self.assertEqual([row[0] for row in locked_rows], ["process-method"])
 
             conn = sqlite3.connect(project_aiv / "project.db")
             try:
@@ -80,6 +80,71 @@ class KnowledgePackAcceptTests(unittest.TestCase):
             finally:
                 conn.close()
 
+    def test_accept_selected_new_pack_updates_lock_and_project_db_adoption(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            project = root / "product"
+            packs = root / "packs"
+            project_aiv = project / ".aivprocess"
+            project_aiv.mkdir(parents=True)
+
+            self.write_json(
+                project_aiv / "knowledge_pack_lock.json",
+                {
+                    "project_id": "demo-product",
+                    "project_schema": "aivprocess-project/v1",
+                    "knowledge_packs": [
+                        {
+                            "pack_id": "process-method",
+                            "version": "0.1.0",
+                            "manifest_sha256": "old-process-hash",
+                            "accepted_at": "2026-05-21T00:00:00Z",
+                            "accepted_by": "example-reviewer",
+                            "rationale": "Initial process baseline.",
+                        }
+                    ],
+                },
+            )
+
+            self.write_manifest(packs / "process-method" / "manifest.json", "process-method", "0.1.0")
+            self.write_manifest(packs / "security-privacy" / "manifest.json", "security-privacy", "0.1.0")
+            self.create_project_db(project_aiv / "project.db")
+
+            plan = knowledge_pack.build_plan(project, packs, pack_ids={"security-privacy"})
+            self.assertEqual(plan["selected_pack_ids"], ["security-privacy"])
+            self.assertEqual([item["pack_id"] for item in plan["available_new"]], ["security-privacy"])
+
+            staged = knowledge_pack.stage_plan(project, plan)
+            knowledge_pack.accept_plan(
+                project,
+                staged,
+                accepted_by="unit-test",
+                rationale="Explicitly selected new pack for local rehearsal only.",
+            )
+
+            lock = json.loads((project_aiv / "knowledge_pack_lock.json").read_text(encoding="utf-8"))
+            self.assertEqual(
+                [item["pack_id"] for item in lock["knowledge_packs"]],
+                ["process-method", "security-privacy"],
+            )
+
+            conn = sqlite3.connect(project_aiv / "project.db")
+            try:
+                db_pack_ids = [
+                    row[0]
+                    for row in conn.execute(
+                        """
+                        SELECT pack_id
+                        FROM knowledge_pack_adoption
+                        ORDER BY pack_id
+                        """
+                    ).fetchall()
+                ]
+                self.assertEqual(db_pack_ids, ["process-method", "security-privacy"])
+                self.assertEqual(conn.execute("PRAGMA integrity_check").fetchone()[0], "ok")
+            finally:
+                conn.close()
+
     def test_accept_without_project_db_updates_lock_only(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
@@ -98,7 +163,7 @@ class KnowledgePackAcceptTests(unittest.TestCase):
             )
             self.write_manifest(packs / "process-method" / "manifest.json", "process-method", "0.1.0")
 
-            plan = knowledge_pack.build_plan(project, packs)
+            plan = knowledge_pack.build_plan(project, packs, pack_ids={"process-method"})
             staged = knowledge_pack.stage_plan(project, plan)
             knowledge_pack.accept_plan(project, staged, accepted_by="unit-test", rationale="Lock-only accept.")
 

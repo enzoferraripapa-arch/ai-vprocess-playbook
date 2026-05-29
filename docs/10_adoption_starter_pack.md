@@ -47,6 +47,8 @@ The template contains:
    requirements, implementation, validation, or handoff content.
 7. Point `.aivprocess/knowledge_pack_lock.json` at the knowledge packs the
    project actually uses.
+   When staging updates, use `tools/knowledge_pack.py stage --pack-id <pack>`
+   for single-pack adoption so unrelated available packs remain unaccepted.
 8. Review `.aivprocess/routing_matrix.json`.
 9. Initialize `.aivprocess/project.db`.
 10. Run one local review and handoff rehearsal.

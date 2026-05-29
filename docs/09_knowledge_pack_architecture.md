@@ -102,12 +102,23 @@ Use staged updates:
 4. `review`: let a human inspect the staged plan.
 5. `accept`: update the lock and record who accepted the new pack version.
 
+Use `--pack-id` when the review is for one intended pack. This keeps a
+single-pack update separate from unrelated `available_not_locked` packs.
+Unscoped `accept` updates already locked packs in the staged plan, but it does
+not add new available packs unless they were explicitly selected in the staged
+plan or `--accept-new` is passed.
+
 Example:
 
 ```bash
 python tools/knowledge_pack.py check --project examples/starter_project --packs examples/knowledge_packs
 python tools/knowledge_pack.py plan --project examples/starter_project --packs examples/knowledge_packs
-python tools/knowledge_pack.py stage --project examples/starter_project --packs examples/knowledge_packs
+python tools/knowledge_pack.py stage --project examples/starter_project --packs examples/knowledge_packs --pack-id process-method
+python tools/knowledge_pack.py accept \
+  --project examples/starter_project \
+  --staged examples/starter_project/.aivprocess/update_staging/20260529T000000Z \
+  --accepted-by example-reviewer \
+  --rationale "Accept process-method update as local method guidance only."
 ```
 
 ## No-X Rules
